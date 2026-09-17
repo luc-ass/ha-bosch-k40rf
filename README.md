@@ -6,6 +6,41 @@ nothing else.
 
 Requires gateway firmware **15.00.01** or newer.
 
+> [!WARNING]
+> **Beta — version 0.1.0.**
+>
+> This has been exercised against exactly one heating system: an air-to-water
+> heat pump with one heating circuit, one hot water circuit and mechanical
+> ventilation. Everything else follows the published API but has never met real
+> hardware.
+>
+> Expect rough edges. Entity names and unique IDs may still change between
+> releases, and a changed unique ID means the entity is recreated and its
+> history starts over. Do not build anything you depend on for heating on top
+> of this yet.
+>
+> Problem reports are the most useful thing you can contribute — especially
+> from systems with solar, a pool, several heating circuits or a cascade of
+> heat sources. Please attach the diagnostics download; it is redacted.
+
+> [!NOTE]
+> **Not affiliated with Bosch.**
+>
+> This is an independent, community-built project. It is not affiliated with,
+> endorsed by, supported by or otherwise connected to Bosch Thermotechnik GmbH,
+> the Bosch Home Comfort Group, or Buderus. "Bosch", "Buderus" and
+> "Connect-Key" are trademarks of their respective owners and appear here only
+> to say which hardware this software talks to.
+>
+> It is built against the OpenAPI description Bosch publishes at
+> [bosch-home-comfort/api-docs](https://github.com/bosch-home-comfort/api-docs)
+> (Apache-2.0), extended by what a live gateway reports for the `/signals`
+> branch, which that description does not cover. No firmware was modified and
+> nothing is bypassed: the gateway hands out the access token itself, to
+> whoever can press its buttons.
+>
+> Using it is at your own risk. See [LICENSE](LICENSE).
+
 ## What you get
 
 - Temperatures, pressures, flow rates, modulation and status across the heat
