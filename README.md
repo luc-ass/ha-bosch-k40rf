@@ -84,8 +84,47 @@ within about five minutes of the buttons being pressed. Both conditions have to
 hold, and both failures report the same error.
 
 If Home Assistant runs elsewhere — a different VLAN, a routed VPN — pairing can
-never succeed from there. Get a token from a machine on the gateway's network
-and paste it into the optional field on the last step.
+never succeed from there. Get the token yourself from any machine on the
+gateway's network, and paste it into the optional field on the last step of the
+setup dialogue.
+
+Press the WLAN and radio buttons together for about a second, then, within the
+next few minutes:
+
+```bash
+curl --insecure --request POST \
+  "https://192.0.2.10:9442/auth/token" \
+  --header "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "grant_type=password" \
+  --data-urlencode "username=123456789" \
+  --data-urlencode "password=aaaabbbbccccdddd" \
+  --data-urlencode "client_name=home-assistant"
+```
+
+`username` and `password` are the login and password from the sticker on the
+Connect-Key module — the login is the gateway's nine-digit id — **with the
+dashes of the password removed**. `--insecure` is needed because the gateway
+serves a self-signed certificate whose name is that numeric id rather than a
+hostname; the connection never leaves your own network. Replace `192.0.2.10`
+with the gateway's address.
+
+The answer carries the token:
+
+```json
+{"access_token": "eyJhbGciOi...", "token_type": "Bearer"}
+```
+
+`412 physical_proximity_unproven` means one of the two conditions did not hold
+— the buttons were not pressed recently enough, or the request did not come
+from the gateway's own subnet. Both report the same error, so check both.
+
+To confirm the token works before pasting it (reading has no subnet
+restriction, so this one can be run from anywhere):
+
+```bash
+curl --insecure --header "Authorization: Bearer <access_token>" \
+  "https://192.0.2.10:9443/gateway/versionFirmware"
+```
 
 The token does not expire, several tokens can be valid at once, and reading data
 afterwards works from anywhere.
