@@ -43,9 +43,7 @@ async def async_setup_entry(
     """Set up the sensors that this gateway actually has."""
     runtime = entry.runtime_data
     entities: list[SensorEntity] = list(_build_resource_sensors(runtime, runtime.devices))
-    # Signals are raw bus diagnostics with no circuit of their own; they stay
-    # on the gateway.
-    entities.extend(_build_signal_sensors(runtime, runtime.devices.hub))
+    entities.extend(_build_signal_sensors(runtime, runtime.devices))
     async_add_entities(entities)
 
 
@@ -84,13 +82,12 @@ def _build_resource_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Ite
         )
 
 
-def _build_signal_sensors(
-    runtime: K40RuntimeData, device_info: DeviceInfo
-) -> Iterable[SensorEntity]:
+def _build_signal_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Iterable[SensorEntity]:
     """Create the diagnostic signal entities, all disabled by default."""
     coordinator = runtime.signal_coordinator
     gateway_id = runtime.gateway_id
     for path in coordinator.paths:
+        device_info = devices.for_signal(path)
         resource = (coordinator.data or {}).get(path)
         name = path.rsplit("/", 1)[-1]
         description = SensorEntityDescription(

@@ -103,8 +103,79 @@ def test_the_ventilation_module_is_recognised(
     device = tree(system_info, installation).for_resource(
         "/ventilation/zone1/supplyFanPower", "zone1"
     )
-    assert device["model"] == "MV200"
     assert device["sw_version"] == "53.03"
+
+
+def test_a_module_id_is_not_passed_off_as_a_model(
+    system_info: SystemInfo, installation: Installation
+) -> None:
+    """MV200 is the module inside the unit; the unit is sold as a Vent 5000 C."""
+    device = tree(system_info, installation).for_resource(
+        "/ventilation/zone1/supplyFanPower", "zone1"
+    )
+    assert device["model_id"] == "MV200"
+    assert device["model"] is None
+
+
+def test_a_product_name_is_shown_as_the_model(
+    system_info: SystemInfo, installation: Installation
+) -> None:
+    """The appliance does name itself, so that name is a model, not an id."""
+    device = tree(system_info, installation).for_resource("/heatSources/hs1/workingTime", "hs1")
+    assert device["model"] == "Compress CS5800iAW 12 MB"
+    assert device["model_id"] == "XCU_THH"
+
+
+@pytest.mark.parametrize(
+    ("signal", "expected"),
+    [
+        # Real signal ids from the test installation.
+        ("VENTILATION.FrostProt.PreHeatPower", "ventilation"),
+        ("VENTILATION.BasicFunction.VENT1.SupFanLevel", "ventilation"),
+        ("SC.HC1.FlowTempSetp", "heatingCircuits"),
+        ("SC.HC1.RTSD.CurrentRoomTempSetp", "heatingCircuits"),
+        ("SC.DHW1.SD.ExtraActive", "dhwCircuits"),
+        ("SRC.CUHP.HP1.CompressorSpeedActual", "heatSources"),
+        ("SRC.OutdoorTemp", "heatSources"),
+        # The heat pump's own hot-water block, not the hot water circuit's.
+        ("SRC.CUHP.DHW.ExternBlocked", "heatSources"),
+        # Likewise: the heat pump drives the circuit pump, and says so.
+        ("SRC.CUHP.CH.HC1PumpRelay", "heatSources"),
+        # The system controller and the bus have no device of their own.
+        ("SC.SeasonOpt.Mode", None),
+        ("SC.DampOutdTemp", None),
+        ("GWEEBUS.Status", None),
+    ],
+)
+def test_a_signal_joins_the_device_its_name_points_at(
+    system_info: SystemInfo, installation: Installation, signal: str, expected: str | None
+) -> None:
+    devices = tree(system_info, installation)
+    target = devices.for_signal(f"/signals/{signal}")
+    if expected is None:
+        assert target == devices.hub
+    else:
+        circuit = {"heatSources": "hs1", "heatingCircuits": "hc1"}.get(
+            expected, {"dhwCircuits": "dhw1", "ventilation": "zone1"}.get(expected, "")
+        )
+        assert target == devices.for_resource(f"/{expected}/{circuit}/x", circuit)
+
+
+def test_a_cascade_leaves_an_unnumbered_signal_on_the_gateway(system_info: SystemInfo) -> None:
+    """SRC.OutdoorTemp names no heat source, so with several it names none."""
+    devices = tree(system_info, Installation(heat_sources=("hs1", "hs2")))
+    assert devices.for_signal("/signals/SRC.OutdoorTemp") == devices.hub
+    # A numbered one still lands where it says.
+    assert devices.for_signal("/signals/SRC.CUHP.HP2.ReturnTemp") == devices.for_resource(
+        "/heatSources/hs2/workingTime", "hs2"
+    )
+
+
+def test_a_signal_for_a_circuit_this_house_lacks_stays_on_the_gateway(
+    system_info: SystemInfo, installation: Installation
+) -> None:
+    devices = tree(system_info, installation)
+    assert devices.for_signal("/signals/SC.HC4.FlowTempSetp") == devices.hub
 
 
 @pytest.mark.parametrize(

@@ -119,7 +119,10 @@ async def test_readings_land_on_the_device_they_describe(
         "Compress CS5800iAW 12 MB"
     )
     assert device_of("sensor.k_40_rf_firmware_version") == "K 40 RF"
-    assert device_of("sensor.k_40_rf_src_outdoortemp") == "K 40 RF"
+    # A signal names the part it reports on, and SRC is the heat generator.
+    assert device_of("sensor.compress_cs5800iaw_12_mb_src_outdoortemp") == (
+        "Compress CS5800iAW 12 MB"
+    )
 
 
 async def test_an_unreachable_gateway_is_retried_not_failed(

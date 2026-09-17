@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+import re
 from string import ascii_letters
 
 from pyk40rf import Installation, Resource, StringResource, SystemInfo, SystemInfoModule
@@ -65,6 +66,26 @@ _FAMILIES: dict[str, _Family] = {
 #: Suffix of the translation key used when a branch has more than one id.
 _NUMBERED = "_numbered"
 
+#: Leading segment of a /signals id -> the branch it reports on. What is left
+#: (SC for the system controller, GWEEBUS for the bus) belongs to the gateway.
+_SIGNAL_BRANCHES: dict[str, str] = {
+    "SRC": "heatSources",
+    "VENTILATION": "ventilation",
+}
+
+#: A segment of a /signals id that names a circuit: SC.HC1.FlowTempSetp is the
+#: first heating circuit's, SRC.CUHP.HP1.ReturnTemp the first heat source's.
+#: Bare words never match -- SRC.CUHP.DHW.ExternBlocked is the heat pump's own
+#: hot-water block, not the hot water circuit's.
+_SIGNAL_CIRCUITS: dict[str, tuple[str, str]] = {
+    "HC": ("heatingCircuits", "hc"),
+    "DHW": ("dhwCircuits", "dhw"),
+    "HP": ("heatSources", "hs"),
+    "VENT": ("ventilation", "zone"),
+}
+
+_SIGNAL_CIRCUIT_SEGMENT = re.compile(rf"^({'|'.join(_SIGNAL_CIRCUITS)})(\d+)$")
+
 
 @dataclass(frozen=True, slots=True)
 class DeviceTree:
@@ -99,6 +120,29 @@ class DeviceTree:
     def for_candidate(self, candidate: ResourceCandidate) -> DeviceInfo:
         """Return the device an expanded catalogue entry belongs on."""
         return self.for_resource(candidate.path, candidate.circuit_id)
+
+    def for_signal(self, path: str) -> DeviceInfo:
+        """Return the device a /signals reading belongs on.
+
+        Signals are raw controller variables, and unlike the catalogue they
+        carry no path structure -- but their names do: VENTILATION.FrostProt
+        .PreHeatPower is the ventilation unit's, SC.HC1.FlowTempSetp the first
+        heating circuit's. Whatever cannot be placed stays on the gateway.
+        """
+        segments = path.rsplit("/", 1)[-1].split(".")
+        for segment in segments:
+            if match := _SIGNAL_CIRCUIT_SEGMENT.match(segment):
+                branch, prefix = _SIGNAL_CIRCUITS[match.group(1)]
+                device = self.branches.get((branch, f"{prefix}{match.group(2)}"))
+                if device is not None:
+                    return device
+        if (reported_on := _SIGNAL_BRANCHES.get(segments[0])) is not None:
+            # An unnumbered signal belongs to the branch's device where there
+            # is only one of it; with a cascade it names none of them.
+            devices = [device for (name, _), device in self.branches.items() if name == reported_on]
+            if len(devices) == 1:
+                return devices[0]
+        return self.hub
 
 
 def build_hub(gateway_id: str, system_info: SystemInfo, firmware: str | None = None) -> DeviceInfo:
@@ -166,7 +210,11 @@ def _subdevice(
     device = DeviceInfo(
         identifiers={(DOMAIN, f"{gateway_id}_{branch.lower()}_{circuit_id}")},
         manufacturer=MANUFACTURER,
-        model=(module.name or module.hardware_id) if module else None,
+        # ModuleHwIdentStr is a module id (MV200, XCU_THH), not a product name:
+        # the unit it sits in is sold as a Vent 5000 C. Only a ProductName may
+        # be shown as the model; the rest is what it is, a model id.
+        model=module.name if module else None,
+        model_id=module.hardware_id if module else None,
         serial_number=module.serial_number if module else None,
         sw_version=module.version if module else None,
         via_device_id=hub_device_id,
