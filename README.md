@@ -1,27 +1,29 @@
 # Bosch K 40 RF for Home Assistant
 
-Reads a Bosch Connect-Key **K 40 RF** heating gateway over its local API. Works
-for Buderus-branded systems too. Everything is read-only: the device API offers
-nothing else.
+Reads a Bosch Connect-Key **K 40 RF** heating gateway over its local API — the
+one the gateway serves on your own network, with a token it hands out itself.
+Buderus-branded systems use the same module and work the same way.
 
-Requires gateway firmware **15.00.01** or newer.
+Everything is read-only. That is the device's decision, not this integration's:
+every field it exposes is marked non-writable.
+
+**Requires gateway firmware 15.00.01 or newer.** Older firmware has no local
+API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.0.**
+> **Beta — version 0.1.7.**
 >
-> This has been exercised against exactly one heating system: an air-to-water
-> heat pump with one heating circuit, one hot water circuit and mechanical
-> ventilation. Everything else follows the published API but has never met real
-> hardware.
+> One heating system has ever run this: an air-to-water heat pump with one
+> heating circuit, hot water and mechanical ventilation. Everything else —
+> cascades, solar, pools, gas and oil boilers, several circuits, radio zones —
+> follows Bosch's published spec and has never met hardware.
 >
-> Expect rough edges. Entity names and unique IDs may still change between
-> releases, and a changed unique ID means the entity is recreated and its
-> history starts over. Do not build anything you depend on for heating on top
-> of this yet.
+> Expect rough edges, and expect entity **names** to keep changing while the
+> shape of things settles. Entity and device **identities** have been stable
+> since 0.1.4: a renaming changes what you read, not what your automations point
+> at, and your history carries over.
 >
-> Problem reports are the most useful thing you can contribute — especially
-> from systems with solar, a pool, several heating circuits or a cascade of
-> heat sources. Please attach the diagnostics download; it is redacted.
+> Do not build anything your heating depends on on top of this yet.
 
 > [!NOTE]
 > **Not affiliated with Bosch.**
@@ -43,182 +45,217 @@ Requires gateway firmware **15.00.01** or newer.
 
 ## What you get
 
-- Temperatures, pressures, flow rates, modulation and status across the heat
-  source, heating circuits, hot water and ventilation
-- Energy counters split by component (produced, compressor, electric heater,
-  ventilation), so the energy dashboard and a performance-factor template both
-  work. Start counts and working times are split the same way, and keep their
-  own units rather than being mislabelled as energy
-- Around 90 diagnostic signals, off by default
-- Discovery: the gateway announces itself, so setup only asks for the sticker
-  password
+- **Temperatures, pressures, flow rates, modulation and status** across the
+  heat generator, the heating circuits, hot water and ventilation — grouped
+  into one device per circuit, rather than one page with everything on it.
+- **Energy counters split by component** (produced, compressor, electric
+  heater, ventilation), so the energy dashboard works and a performance factor
+  is one template division. Start counts and working times arrive in the same
+  shape and keep their own units instead of being mislabelled as energy.
+- **87 diagnostic signals** from the controller itself — compressor speed,
+  valve positions, frost protection, bus status. Disabled by default; switch on
+  the ones you want.
+- **Faults read as "unknown", not as −3276.8 °C.** The gateway reports a broken
+  sensor as a sentinel value; those are recognised instead of charted.
 
-## Install (HACS)
+## Install
 
-1. Add `https://github.com/luc-ass/ha-bosch-k40rf` as a custom repository.
-2. Install **Bosch K 40 RF** and restart Home Assistant.
-3. The gateway should appear under discovered devices. If not, add it manually
-   with its IP address.
+Through [HACS](https://hacs.xyz):
+
+1. Add `https://github.com/luc-ass/ha-bosch-k40rf` as a custom repository
+   (type: integration).
+2. Install **Bosch K 40 RF**, then restart Home Assistant.
+3. **Settings → Devices & services → Add integration → Bosch K 40 RF**, and
+   enter the gateway's IP address.
 4. Enter the login and password from the sticker on the Connect-Key module.
 5. When asked, **press the WLAN and radio buttons on the gateway together for
    about a second**, until the blue LED lights up, then continue.
 
+The gateway also announces itself over mDNS (`_hvac-open-api._tcp`) and the
+integration listens for that. At the one installation available for testing the
+announcement only turned up *after* the gateway had been addressed once by IP —
+so if it is not offered to you, add it by address; that may well be what makes
+it appear.
+
 ### If pairing keeps failing
 
-The gateway only issues a token to a client on its own subnet, and only within
-about five minutes of the buttons being pressed. Both conditions have to hold.
-If Home Assistant runs elsewhere -- a different VLAN, a routed VPN -- pairing
-can never succeed from there. Obtain a token from a machine on the gateway's
-network and paste it into the optional field on the last step.
+The gateway issues a token only to a client **on its own subnet**, and only
+within about five minutes of the buttons being pressed. Both conditions have to
+hold, and both failures report the same error.
 
-The token does not expire, and reading data afterwards works from anywhere.
+If Home Assistant runs elsewhere — a different VLAN, a routed VPN — pairing can
+never succeed from there. Get a token from a machine on the gateway's network
+and paste it into the optional field on the last step.
 
-## How it decides what to create
+The token does not expire, several tokens can be valid at once, and reading data
+afterwards works from anywhere.
 
-The published API declares 261 paths, covering every installation variant Bosch
-sells: up to six heat sources, four heating circuits, solar, pool, sixteen
-zones. No single house has all of them, and the ones it does not have answer
-404.
+## How it works
 
-So the integration declares all of them and asks once at startup which ones
-answer. Only those become entities and only those get polled. A cascade of
-three heat sources or a solar circuit is handled by the same code that handles
-a single air-to-water heat pump -- it just finds more.
+### What it creates
 
-A circuit added to your heating system later is picked up when the integration
-reloads, not while it is running. One that is taken out loses its device on the
-next reload.
+Bosch's spec declares every installation the K 40 RF can sit in front of: up to
+six heat sources, four heating circuits, solar, pool, sixteen zones. No house
+has all of it, and the parts a gateway does not have answer `404`.
 
-## How it groups what it creates
+So the integration declares all of them — 204 resources — and asks once at
+startup which ones answer. Only those become entities, and only those get
+polled. A cascade of three heat sources or a solar circuit runs through the same
+code as a single heat pump; it simply finds more.
 
-The gateway becomes the hub device, and each circuit, zone and heat source it
-reports becomes a device of its own beneath it:
+A circuit added to your heating system later appears when the integration
+reloads, not while it is running. One taken out loses its device on the next
+reload.
+
+### How it groups them
+
+The gateway is the hub, and every circuit, zone and heat source it reports
+becomes a device beneath it:
 
 ```
-K 40 RF                     gateway diagnostics, plant-wide system readings
-|-- Compress CS5800iAW      the heat generator
-|-- Heating circuit         one per circuit, numbered where there are several
-|-- Hot water
-`-- Ventilation
+K 40 RF                     gateway diagnostics, plant-wide readings
+├── Compress CS5800iAW      the heat generator
+├── Heating circuit         one per circuit, numbered where there are several
+├── Hot water
+└── Ventilation
 ```
 
-The functional branches of the API decide this, because they are what every
-installation reports. `/system/basicInfo` lists the physical modules with their
-product name, firmware and serial number, but it does not say which module
-serves which branch -- so it is used to enrich a device, never to invent one. A
-product name is claimed for a heat source only where there is exactly one; a
-cascade gets numbered heat sources and no guessed models.
+The functional branches of the API decide this, because they are the one thing
+every installation reports. `/system/basicInfo` lists the physical modules with
+product name, firmware and serial number, but never says which module serves
+which branch — so it enriches a device and never invents one. A product name is
+claimed for a heat generator only where there is exactly one; a cascade gets
+numbered heat sources and no guessed models.
 
-Readings that describe the plant rather than one circuit -- outdoor
-temperature, system pressure, the energy balance of a cascade -- stay on the
-gateway.
+Readings that describe the plant rather than one circuit — outdoor temperature,
+system pressure, the energy balance of a cascade — stay on the gateway.
 
-Entity names say what the device does not: on "Heating circuit" the room
-temperature is "Room temperature", not "Heating circuit room temperature". The
-diagnostic signals are named the same way, from their controller id minus the
-part the device already carries -- `VENTILATION.FrostProt.PreHeatPower` reads
-as "Frost protection pre heat power" on the ventilation unit. Acronyms the API
-never spells out (`RTSD`, `FPD`, `CUHP`) are left as the controller writes
-them, because a guess would read better and mean less.
+### What things are called
 
-## Polling
+The device says what the entity then does not: on "Heating circuit" the room
+temperature is **Room temperature**, not "Heating circuit room temperature".
 
-Live readings every 60 seconds, diagnostic signals every 10 minutes and only
+The diagnostic signals are named from their controller id, minus the part the
+device already carries: `VENTILATION.FrostProt.PreHeatPower` reads as **Frost
+protection pre heat power** on the ventilation unit. Acronyms the API never
+spells out — `RTSD`, `FPD`, `SD`, `CUHP` — are left exactly as the controller
+writes them, because a guessed expansion would read better and mean less.
+
+### Polling
+
+Live readings every 60 seconds. Diagnostic signals every 10 minutes, and only
 while at least one of them is enabled. The gateway serves one resource per
 request, so a poll is dozens of small requests; at most four run at a time.
 
-History (`/recordings`) is not polled at all.
+History (`/recordings`) is available from the API but is not polled, and not
+imported into long-term statistics.
 
 ## Tested installations
 
-The integration declares every resource Bosch's spec describes -- 204 of them --
-but only **101 have ever answered on real hardware**, all of it the same
-installation. The rest is written against the spec, and the spec has been wrong
-twice already.
+204 resources are declared and **101 have ever answered on real hardware** —
+all of it the same installation. The rest is written against the spec, and the
+spec has been wrong twice already.
 
 | Appliance | System | Circuits | Firmware | Confirmed |
 |---|---|---|---|---|
-| Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
+| Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
 
-**If your system is not in this table, a diagnostics file from it is the most
-useful thing you can send** -- particularly a cascade, solar, a pool, a gas or
-oil boiler, several heating circuits, zones with radio thermostats, or a
+**If your system is not in this table, its diagnostics file is the most useful
+thing you can send** — particularly a cascade, solar, a pool, a gas or oil
+boiler, several heating circuits, zones with radio thermostats, or a
 Buderus-branded system.
 
-Settings -> Devices & services -> Bosch K 40 RF -> ... -> **Download
-diagnostics**, then either open an [installation
+**Settings → Devices & services → Bosch K 40 RF → ⋯ → Download diagnostics**,
+then either open an [installation
 report](https://github.com/luc-ass/ha-bosch-k40rf/issues/new?template=installation_report.yml)
-or, if nothing is actually wrong, just post it in
-[Discussions](https://github.com/luc-ass/ha-bosch-k40rf/discussions) -- a file
-from a system that works is worth exactly as much. It leaves out your token,
-gateway id and serial numbers; it does contain your heating readings, so have a
-look before attaching it.
+or, if nothing is actually wrong, post it in
+[Discussions](https://github.com/luc-ass/ha-bosch-k40rf/discussions) — a file
+from a system that simply works is worth exactly as much.
 
-What happens to it: `tools/report_from_diagnostics.py` turns the file into a
-list of what your system confirms that ours never had, what it serves that the
-catalogue does not declare, and what its `/signals` branch looks like. That
-usually becomes a commit the same day, and your system joins the table.
+The file leaves out your token, your gateway id and the serial numbers. It does
+contain your heating readings: temperatures, energy counters, which circuits
+exist. Have a look before attaching it.
+
+What happens to it: `tools/report_from_diagnostics.py` turns it into a list of
+what your system confirms that ours never had, what it serves that the
+catalogue does not declare, and what its `/signals` branch looks like. That is
+usually a commit the same day, and your system joins the table.
 
 ## Known limitations
 
-- **Read-only.** Every field the device exposes is marked non-writable, so
-  there are no climate or water-heater entities, and no actions. In Bosch's own
-  API discussion a maintainer wrote that "write access for the Local API is
-  definitely on our radar for the future" and that a web API with write access
-  is planned "in the coming months", with safeguards and no date
-  ([discussion](https://github.com/bosch-home-comfort/api-docs/discussions/2), 16 Sep 2026). Nothing to build on yet, but the shape of
-  this integration -- all API calls in `pyk40rf`, entities derived from the
-  spec -- is what makes adding writable entities a small change rather than a
+- **Read-only.** No climate, water-heater or switch entities, and no actions.
+  In Bosch's own API discussion a maintainer wrote that "write access for the
+  Local API is definitely on our radar for the future", and that a web API with
+  write access is planned "in the coming months", with safeguards and no date
+  ([discussion](https://github.com/bosch-home-comfort/api-docs/discussions/2),
+  16 Sep 2026). Nothing to build on yet — but every API call lives in
+  [`pyk40rf`](https://github.com/luc-ass/pyk40rf) and every entity is derived
+  from the spec, so writable entities would be an addition rather than a
   rewrite.
-- **One installation tested.** Solar, pool, cascade, several circuits and
-  radio thermostats follow the spec but have never met hardware -- see [Tested
-  installations](#tested-installations) for what a report needs.
-- Historical data is available from the API but is not yet imported into
-  long-term statistics.
+- **One installation tested.** See [Tested
+  installations](#tested-installations).
+- **Discovery is unreliable.** The announcement has been seen, but only after
+  the gateway had been contacted once over its API. Cause unknown; manual setup
+  always works.
+- **Pairing needs physical access and the same subnet.** There is no remote path
+  to a first token.
+- **No history import.** The gateway keeps hourly, daily and monthly series;
+  statistics here start the day you set the integration up.
+- **Entity names are English.** German covers the setup dialogue and the device
+  names only.
 
 ## Differences from the Home Assistant Core version
 
-This repository is the HACS build. Two things differ from what a Core
-submission carries:
+This repository is the HACS build. What a Core submission carries differs in
+four places:
 
 | | HACS (here) | Core |
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
-| `manifest.json` → `requirements` | `pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.3` | `pyk40rf==0.1.x`, from PyPI |
+| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.3` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
 `pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.
-Core requires a PyPI release (`dependency-transparency`), so that line has to
-change before submission.
+Core requires a PyPI release (`dependency-transparency`), so that has to change
+before submission.
 
 ## Development
 
 ```bash
 pytest
-ruff check custom_components tests
+ruff check custom_components tools tests
 mypy custom_components/bosch_k40rf
 python -m script.hassfest --integration-path .../custom_components/bosch_k40rf
 ```
 
-The resource catalogue and the entity names in `strings.json` are generated:
+Two files are generated and must not be hand-edited; the rules behind the names
+live in `naming.py` and feed both:
 
 ```bash
-python tools/generate_catalog.py    # from the API spec + a live harvest
-python tools/generate_strings.py    # entity names, from the catalogue
+python tools/generate_catalog.py    # catalog.py, from the API spec + a live harvest
+python tools/generate_strings.py    # strings.json + translations/en.json
 ```
 
-A diagnostics file from somebody else's heating system is read with:
+Somebody else's diagnostics file is read with:
 
 ```bash
 python tools/report_from_diagnostics.py diagnostics.json
 ```
 
-It says what that installation confirms, what it serves that the catalogue does
-not declare, and what its `/signals` branch looks like. Newly confirmed
-resources belong in the catalogue as `live_confirmed`, which
+Newly confirmed resources belong in the catalogue as `live_confirmed`, which
 `generate_catalog.py` writes from a harvest.
+
+Two rules the tests enforce, both learned the hard way:
+
+- **Nothing is declared by hand that the spec already declares.** Four invented
+  probe paths once took a running installation down, because the gateway answers
+  `403` — not `404` — for anything outside its spec.
+  (`tests/test_resources.py::TestProbePaths`)
+- **No two entities of one device may read the same.** That check found two name
+  collisions that had been invisible while every entity sat on one page.
+  (`tests/test_resources.py::TestNaming::test_names_are_unique_per_device`)
 
 ## License
 
-Apache-2.0
+Apache-2.0 — see [LICENSE](LICENSE).
