@@ -55,6 +55,7 @@ class K40BaseCoordinator(DataUpdateCoordinator[dict[str, Resource]]):
             return await self.client.async_get_many(paths)
         except K40AuthError as err:
             # The token is not accepted any more; only the user can fix that.
+            _LOGGER.error("Gateway rejected the token while polling: %s", err)
             raise ConfigEntryAuthFailed(
                 translation_domain=DOMAIN, translation_key="auth_failed"
             ) from err

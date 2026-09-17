@@ -40,10 +40,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
             include_zones=False, include_devices=False
         )
     except K40AuthError as err:
+        # The user-facing message has to stay short, but without the gateway's
+        # own words a rejection is undiagnosable from a log.
+        _LOGGER.error("Gateway %s rejected the token: %s", entry.data[CONF_HOST], err)
         raise ConfigEntryAuthFailed(
             translation_domain=DOMAIN, translation_key="auth_failed"
         ) from err
     except K40Error as err:
+        _LOGGER.debug("Gateway %s not ready: %s", entry.data[CONF_HOST], err)
         raise ConfigEntryNotReady(
             translation_domain=DOMAIN,
             translation_key="cannot_connect",

@@ -13,9 +13,9 @@
   ],
   "quality_scale": "bronze",
   "requirements": [
-    "pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.0"
+    "pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.1"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "zeroconf": [
     "_hvac-open-api._tcp.local."
   ]
