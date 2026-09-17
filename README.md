@@ -146,10 +146,13 @@ oil boiler, several heating circuits, zones with radio thermostats, or a
 Buderus-branded system.
 
 Settings -> Devices & services -> Bosch K 40 RF -> ... -> **Download
-diagnostics**, then open an [installation
-report](https://github.com/luc-ass/ha-bosch-k40rf/issues/new?template=installation_report.yml).
-The file leaves out your token, gateway id and serial numbers; it does contain
-your heating readings, so have a look before attaching it.
+diagnostics**, then either open an [installation
+report](https://github.com/luc-ass/ha-bosch-k40rf/issues/new?template=installation_report.yml)
+or, if nothing is actually wrong, just post it in
+[Discussions](https://github.com/luc-ass/ha-bosch-k40rf/discussions) -- a file
+from a system that works is worth exactly as much. It leaves out your token,
+gateway id and serial numbers; it does contain your heating readings, so have a
+look before attaching it.
 
 What happens to it: `tools/report_from_diagnostics.py` turns the file into a
 list of what your system confirms that ours never had, what it serves that the

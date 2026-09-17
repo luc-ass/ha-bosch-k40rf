@@ -1,5 +1,11 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Share your installation
+    url: https://github.com/luc-ass/ha-bosch-k40rf/discussions
+    about: >-
+      Your system works and you just want to say what it is? That belongs in
+      Discussions, not in an issue -- a diagnostics file from a cascade, a
+      boiler, solar or several circuits is worth as much when nothing is broken.
   - name: Bosch's own API documentation and discussions
     url: https://github.com/bosch-home-comfort/api-docs/discussions
     about: >-
