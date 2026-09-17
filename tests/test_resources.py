@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from pyk40rf import Installation
+from pyk40rf.const import PROBE_PATHS
 
 from custom_components.bosch_k40rf.binary_resources import BINARY_RESOURCES, BY_TEMPLATE
 from custom_components.bosch_k40rf.catalog import BY_PATH, CATALOG
@@ -169,3 +170,39 @@ class TestTranslations:
         assert set(german["config"]["error"]) == set(english["config"]["error"])
         assert set(german["config"]["abort"]) == set(english["config"]["abort"])
         assert set(german["exceptions"]) == set(english["exceptions"])
+
+
+class TestProbePaths:
+    """The library probes for circuits; those paths must be real.
+
+    An invented probe path is not harmless: the gateway answers 403 rather
+    than 404 for paths outside the published specification, and a 403 used to
+    be read as a rejected token. One made-up path took a live installation
+    down at setup.
+    """
+
+    #: Which installation id fills each family's placeholder.
+    FAMILY_PLACEHOLDERS = {
+        "heat_sources": "heatSourceId",
+        "heating_circuits": "heatingCircuitId",
+        "dhw_circuits": "dhwCircuitId",
+        "solar_circuits": "solarCircuitId",
+        "ventilation_zones": "ventilationZoneId",
+        "zones": "zoneId",
+        "devices": "deviceId",
+    }
+
+    def test_every_probe_path_exists_in_the_specification(self) -> None:
+        for family, templates in PROBE_PATHS.items():
+            placeholder = self.FAMILY_PLACEHOLDERS[family]
+            for template in templates:
+                path = template.replace("{id}", "{" + placeholder + "}")
+                assert path in BY_PATH, f"{path} is not in the API specification"
+
+    def test_every_family_is_covered(self) -> None:
+        assert set(PROBE_PATHS) == set(self.FAMILY_PLACEHOLDERS)
+
+    def test_each_family_has_more_than_one_probe_path(self) -> None:
+        """Installations differ in kind: a gas boiler has no compressor."""
+        for family, templates in PROBE_PATHS.items():
+            assert len(templates) >= 2, family
