@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .binary_resources import BY_TEMPLATE
 from .coordinator import K40BaseCoordinator
-from .entity import K40Entity, build_device_info
+from .entity import K40Entity
 from .naming import english_name, translation_key
 from .types import K40ConfigEntry
 
@@ -25,8 +25,6 @@ async def async_setup_entry(
 ) -> None:
     """Set up the binary sensors this gateway has."""
     runtime = entry.runtime_data
-    device_info = build_device_info(runtime.gateway_id, runtime.system_info.product_name, None)
-
     entities = [
         K40BinarySensor(
             runtime.coordinator,
@@ -38,7 +36,7 @@ async def async_setup_entry(
             ),
             runtime.gateway_id,
             candidate.path,
-            device_info,
+            runtime.devices.for_candidate(candidate),
             BY_TEMPLATE[candidate.spec.path].on_values,
         )
         for candidate in runtime.coordinator.candidates

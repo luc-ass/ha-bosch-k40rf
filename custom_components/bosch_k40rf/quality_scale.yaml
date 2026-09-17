@@ -81,8 +81,12 @@ rules:
     status: exempt
     comment: Nothing the user can repair is detectable beyond reauthentication.
   stale-devices:
-    status: exempt
-    comment: One config entry is one gateway; there are no sub-devices to remove.
+    status: done
+    comment: >-
+      Circuits, zones and heat sources are devices under the gateway. Discovery
+      enumerates the whole installation or fails the setup, so a circuit missing
+      from it is gone rather than unreachable, and its device is removed at
+      setup.
 
   # Platinum
   async-dependency: done

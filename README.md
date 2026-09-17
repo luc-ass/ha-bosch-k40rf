@@ -86,7 +86,32 @@ three heat sources or a solar circuit is handled by the same code that handles
 a single air-to-water heat pump -- it just finds more.
 
 A circuit added to your heating system later is picked up when the integration
-reloads, not while it is running.
+reloads, not while it is running. One that is taken out loses its device on the
+next reload.
+
+## How it groups what it creates
+
+The gateway becomes the hub device, and each circuit, zone and heat source it
+reports becomes a device of its own beneath it:
+
+```
+K 40 RF                     gateway diagnostics, plant-wide system readings
+|-- Compress CS5800iAW      the heat generator
+|-- Heating circuit         one per circuit, numbered where there are several
+|-- Hot water
+`-- Ventilation
+```
+
+The functional branches of the API decide this, because they are what every
+installation reports. `/system/basicInfo` lists the physical modules with their
+product name, firmware and serial number, but it does not say which module
+serves which branch -- so it is used to enrich a device, never to invent one. A
+product name is claimed for a heat source only where there is exactly one; a
+cascade gets numbered heat sources and no guessed models.
+
+Readings that describe the plant rather than one circuit -- outdoor
+temperature, system pressure, the energy balance of a cascade -- stay on the
+gateway.
 
 ## Polling
 

@@ -8,7 +8,6 @@ from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER
 from .coordinator import K40BaseCoordinator
 
 
@@ -47,15 +46,3 @@ class K40Entity(CoordinatorEntity[K40BaseCoordinator]):
         last result is the honest test, not just the coordinator's health.
         """
         return super().available and self.resource is not None
-
-
-def build_device_info(gateway_id: str, model: str | None, sw_version: str | None) -> DeviceInfo:
-    """Describe the gateway for the device registry."""
-    return DeviceInfo(
-        identifiers={(DOMAIN, gateway_id)},
-        manufacturer=MANUFACTURER,
-        model=model,
-        name=model or "K 40 RF",
-        serial_number=gateway_id,
-        sw_version=sw_version,
-    )

@@ -20,7 +20,8 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .binary_resources import BY_TEMPLATE as BINARY_RESOURCE_PATHS
 from .coordinator import K40BaseCoordinator
-from .entity import K40Entity, build_device_info
+from .devices import DeviceTree
+from .entity import K40Entity
 from .naming import component_key, component_name, english_name, translation_key
 from .resources import ResourceCandidate
 from .types import K40ConfigEntry, K40RuntimeData
@@ -41,25 +42,14 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensors that this gateway actually has."""
     runtime = entry.runtime_data
-    device_info = build_device_info(
-        runtime.gateway_id,
-        runtime.system_info.product_name,
-        _firmware_version(runtime),
-    )
-    entities: list[SensorEntity] = list(_build_resource_sensors(runtime, device_info))
-    entities.extend(_build_signal_sensors(runtime, device_info))
+    entities: list[SensorEntity] = list(_build_resource_sensors(runtime, runtime.devices))
+    # Signals are raw bus diagnostics with no circuit of their own; they stay
+    # on the gateway.
+    entities.extend(_build_signal_sensors(runtime, runtime.devices.hub))
     async_add_entities(entities)
 
 
-def _firmware_version(runtime: K40RuntimeData) -> str | None:
-    """Read the gateway's firmware version out of the first poll, if present."""
-    resource = (runtime.coordinator.data or {}).get("/gateway/versionFirmware")
-    return resource.value if isinstance(resource, StringResource) else None
-
-
-def _build_resource_sensors(
-    runtime: K40RuntimeData, device_info: DeviceInfo
-) -> Iterable[SensorEntity]:
+def _build_resource_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Iterable[SensorEntity]:
     """Create one entity per present resource, several for energy balances."""
     coordinator = runtime.coordinator
     gateway_id = runtime.gateway_id
@@ -69,6 +59,7 @@ def _build_resource_sensors(
             # Modelled as a binary sensor; showing it twice helps nobody.
             continue
         resource = (coordinator.data or {}).get(candidate.path)
+        device_info = devices.for_candidate(candidate)
 
         if isinstance(resource, EnergyResource):
             # An energy balance is several counters in one resource; each one

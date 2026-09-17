@@ -59,6 +59,38 @@
       "reauth_successful": "Verbindung zum Gateway wiederhergestellt."
     }
   },
+  "device": {
+    "heat_source": {
+      "name": "Wärmeerzeuger"
+    },
+    "heat_source_numbered": {
+      "name": "Wärmeerzeuger {number}"
+    },
+    "heating_circuit": {
+      "name": "Heizkreis"
+    },
+    "heating_circuit_numbered": {
+      "name": "Heizkreis {number}"
+    },
+    "hot_water": {
+      "name": "Warmwasser"
+    },
+    "hot_water_numbered": {
+      "name": "Warmwasser {number}"
+    },
+    "solar_circuit": {
+      "name": "Solarkreis"
+    },
+    "solar_circuit_numbered": {
+      "name": "Solarkreis {number}"
+    },
+    "ventilation": {
+      "name": "Lüftung"
+    },
+    "ventilation_numbered": {
+      "name": "Lüftung {number}"
+    }
+  },
   "exceptions": {
     "auth_failed": {
       "message": "Das Gateway akzeptiert den gespeicherten Token nicht mehr."

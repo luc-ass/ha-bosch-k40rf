@@ -59,6 +59,38 @@
       "reauth_successful": "Reconnected to the gateway."
     }
   },
+  "device": {
+    "heat_source": {
+      "name": "Heat source"
+    },
+    "heat_source_numbered": {
+      "name": "Heat source {number}"
+    },
+    "heating_circuit": {
+      "name": "Heating circuit"
+    },
+    "heating_circuit_numbered": {
+      "name": "Heating circuit {number}"
+    },
+    "hot_water": {
+      "name": "Hot water"
+    },
+    "hot_water_numbered": {
+      "name": "Hot water {number}"
+    },
+    "solar_circuit": {
+      "name": "Solar circuit"
+    },
+    "solar_circuit_numbered": {
+      "name": "Solar circuit {number}"
+    },
+    "ventilation": {
+      "name": "Ventilation"
+    },
+    "ventilation_numbered": {
+      "name": "Ventilation {number}"
+    }
+  },
   "exceptions": {
     "auth_failed": {
       "message": "The gateway no longer accepts the stored token."

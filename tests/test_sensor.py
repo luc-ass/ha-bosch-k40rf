@@ -15,7 +15,11 @@ from homeassistant.helpers import entity_registry as er
 
 from .test_init import setup_entry
 
+#: Readings of the heat generator now sit on its own device.
 PREFIX = "sensor.compress_cs5800iaw_12_mb"
+
+#: Signals and gateway resources stay on the hub.
+GATEWAY_PREFIX = "sensor.k_40_rf"
 
 
 async def test_a_temperature_becomes_a_temperature_sensor(
@@ -117,7 +121,7 @@ async def test_a_signal_enum_reports_its_label(
     await setup_entry(hass, config_entry)
 
     registry = er.async_get(hass)
-    entry = registry.async_get(f"{PREFIX}_src_outdoortemp")
+    entry = registry.async_get(f"{GATEWAY_PREFIX}_src_outdoortemp")
     assert entry is not None
     # Diagnostic signals are off until the user asks for them.
     assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION

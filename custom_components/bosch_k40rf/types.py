@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from pyk40rf import Installation, SystemInfo
 
     from .coordinator import K40DataCoordinator, K40SignalCoordinator
+    from .devices import DeviceTree
 
 
 @dataclass(slots=True)
@@ -22,6 +23,7 @@ class K40RuntimeData:
     installation: Installation
     system_info: SystemInfo
     gateway_id: str
+    devices: DeviceTree
 
 
 type K40ConfigEntry = ConfigEntry[K40RuntimeData]

@@ -35,6 +35,17 @@ def system_info_fixture() -> SystemInfo:
                 version="9.7.0",
                 serial_number="0" * 23,
             ),
+            # The modules the real device lists alongside the appliance: only
+            # the appliance carries a product name.
+            SystemInfoModule(
+                name=None, hardware_id="K40RF", version="15.00.01", serial_number="1" * 23
+            ),
+            SystemInfoModule(
+                name=None, hardware_id="MV200", version="53.03", serial_number="2" * 23
+            ),
+            SystemInfoModule(
+                name=None, hardware_id="RT 800", version="21.04", serial_number="3" * 23
+            ),
         ),
     )
 
