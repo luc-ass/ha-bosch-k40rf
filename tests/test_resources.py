@@ -85,18 +85,47 @@ class TestNaming:
         )
 
     def test_abbreviations_are_expanded(self) -> None:
-        assert english_name("/dhwCircuits/{dhwCircuitId}/actualTemp") == (
-            "Hot water actual temperature"
+        assert english_name("/dhwCircuits/{dhwCircuitId}/actualTemp") == "Actual temperature"
+
+    def test_a_branch_with_a_device_is_not_repeated_in_the_name(self) -> None:
+        """The entity sits on "Hot water"; saying it twice helps nobody."""
+        assert english_name("/heatingCircuits/{heatingCircuitId}/roomtemperature") == (
+            "Room temperature"
         )
+        assert english_name("/ventilation/{ventilationZoneId}/ventilationMode") == "Mode"
+
+    def test_a_branch_without_a_device_keeps_its_label(self) -> None:
+        """Gateway and system share the hub, and would otherwise collide."""
+        assert english_name("/gateway/update/status") == "Gateway update status"
+        assert english_name("/system/update/status") == "System update status"
 
     def test_a_repeated_branch_word_is_dropped_only_when_whole(self) -> None:
-        assert english_name("/ventilation/{ventilationZoneId}/ventilationMode") == (
-            "Ventilation mode"
-        )
         # "heatCarrierPump" must keep its "heat".
         assert "heat carrier" in english_name(
             "/heatSources/{heatSourceId}/refrigerant/heatCarrierPumpSpeed"
         )
+
+    def test_structural_segments_are_not_names(self) -> None:
+        assert english_name("/ventilation/{ventilationZoneId}/sensors/supplyTemp") == (
+            "Supply temperature"
+        )
+
+    def test_names_are_unique_per_device(self) -> None:
+        """Two entities on one device page must not read the same.
+
+        The branch decides the device, so grouping by it is the same grouping
+        the device registry ends up with -- except for a cascade, where the
+        entities spread over more devices, never fewer.
+        """
+        by_branch: dict[str, list[str]] = {}
+        for spec in CATALOG:
+            if spec.value_type not in ENTITY_TYPES:
+                continue
+            branch = spec.path.strip("/").split("/")[0]
+            by_branch.setdefault(branch, []).append(english_name(spec.path))
+        for branch, names in by_branch.items():
+            duplicates = {name for name in names if names.count(name) > 1}
+            assert not duplicates, f"{branch}: {duplicates}"
 
     def test_every_entity_resource_has_a_name(self) -> None:
         for spec in CATALOG:

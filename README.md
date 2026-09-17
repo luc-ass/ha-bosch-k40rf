@@ -113,6 +113,14 @@ Readings that describe the plant rather than one circuit -- outdoor
 temperature, system pressure, the energy balance of a cascade -- stay on the
 gateway.
 
+Entity names say what the device does not: on "Heating circuit" the room
+temperature is "Room temperature", not "Heating circuit room temperature". The
+diagnostic signals are named the same way, from their controller id minus the
+part the device already carries -- `VENTILATION.FrostProt.PreHeatPower` reads
+as "Frost protection pre heat power" on the ventilation unit. Acronyms the API
+never spells out (`RTSD`, `FPD`, `CUHP`) are left as the controller writes
+them, because a guess would read better and mean less.
+
 ## Polling
 
 Live readings every 60 seconds, diagnostic signals every 10 minutes and only

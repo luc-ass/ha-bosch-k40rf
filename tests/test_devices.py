@@ -13,6 +13,7 @@ import pytest
 from custom_components.bosch_k40rf.catalog import ResourceSpec
 from custom_components.bosch_k40rf.const import DOMAIN
 from custom_components.bosch_k40rf.devices import DeviceTree, build_device_tree, build_hub
+from custom_components.bosch_k40rf.naming import signal_name
 from custom_components.bosch_k40rf.resources import ResourceCandidate
 
 from .conftest import DEVICE_ID
@@ -213,3 +214,50 @@ def test_a_gateway_with_bare_modules_still_describes_itself() -> None:
     circuit = devices.for_resource("/heatingCircuits/hc1/roomtemperature", "hc1")
     assert circuit["model"] is None
     assert circuit["translation_key"] == "heating_circuit"
+
+
+class TestSignalNames:
+    """What the device says, the entity must not repeat -- and vice versa."""
+
+    @pytest.mark.parametrize(
+        ("signal", "expected"),
+        [
+            # Real ids. The device carries SRC/SC/VENTILATION and the circuit.
+            ("VENTILATION.FrostProt.PreHeatPower", "Frost protection pre heat power"),
+            ("VENTILATION.BasicFunction.VENT1.CurOpMode", "Basic function current operating mode"),
+            ("SC.HC1.FlowTempSetp", "Flow temperature setpoint"),
+            ("SC.DHW1.HolidayAutoTD", "Holiday auto thermal disinfection"),
+            ("SRC.OutdoorTemp", "Outdoor temperature"),
+            ("SRC.IntDHW.CylTemp", "Internal hot water cylinder temperature"),
+            # A run of capitals splits too, or CHPumpSpeed reads as "chpump".
+            ("SRC.CUHP.HP1.CHPumpSpeed", "CUHP heating pump speed"),
+            ("SRC.CUHP.HP1.DHWValve", "CUHP hot water valve"),
+            # Acronyms the API never spells out stay as the controller writes
+            # them: a guess would read better and mean less.
+            ("SC.HC1.FPD.Active", "FPD active"),
+            ("SRC.CUHP.PC0ConnectedToLIN", "CUHP PC0 connected to LIN"),
+            # On the gateway the leading segment has to stay, or this would
+            # read like the system's own outdoor sensor.
+            ("SC.DampOutdTemp", "System damped outdoor temperature"),
+            ("GWEEBUS.Status", "EMS bus status"),
+        ],
+    )
+    def test_a_signal_reads_as_a_name(
+        self, system_info: SystemInfo, installation: Installation, signal: str, expected: str
+    ) -> None:
+        _, parts = tree(system_info, installation).signal_target(f"/signals/{signal}")
+        assert signal_name(parts) == expected
+
+    def test_an_undiscovered_circuit_is_kept_in_the_name(
+        self, system_info: SystemInfo, installation: Installation
+    ) -> None:
+        """No hc4 device, so the entity has to say which circuit it meant."""
+        devices = tree(system_info, installation)
+        device, parts = devices.signal_target("/signals/SC.HC4.FlowTempSetp")
+        assert device == devices.hub
+        assert signal_name(parts) == "System heating circuit 4 flow temperature setpoint"
+
+    def test_a_cascade_keeps_the_head_on_the_gateway(self, system_info: SystemInfo) -> None:
+        devices = tree(system_info, Installation(heat_sources=("hs1", "hs2")))
+        _, parts = devices.signal_target("/signals/SRC.OutdoorTemp")
+        assert signal_name(parts) == "Heat source outdoor temperature"

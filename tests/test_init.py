@@ -120,7 +120,7 @@ async def test_readings_land_on_the_device_they_describe(
     )
     assert device_of("sensor.k_40_rf_firmware_version") == "K 40 RF"
     # A signal names the part it reports on, and SRC is the heat generator.
-    assert device_of("sensor.compress_cs5800iaw_12_mb_src_outdoortemp") == (
+    assert device_of("sensor.compress_cs5800iaw_12_mb_outdoor_temperature") == (
         "Compress CS5800iAW 12 MB"
     )
 

@@ -66,8 +66,8 @@ async def test_an_energy_balance_becomes_one_sensor_per_component(
     """Separate counters are what makes the energy dashboard usable."""
     await setup_entry(hass, config_entry)
 
-    produced = hass.states.get(f"{PREFIX}_total_energy_produced")
-    compressor = hass.states.get(f"{PREFIX}_total_energy_compressor")
+    produced = hass.states.get(f"{PREFIX}_system_total_energy_produced")
+    compressor = hass.states.get(f"{PREFIX}_system_total_energy_compressor")
 
     assert produced is not None
     assert compressor is not None
@@ -121,7 +121,8 @@ async def test_a_signal_enum_reports_its_label(
     await setup_entry(hass, config_entry)
 
     registry = er.async_get(hass)
-    entry = registry.async_get(f"{PREFIX}_src_outdoortemp")
+    # The signal is named from its id, minus what the device already says.
+    entry = registry.async_get(f"{PREFIX}_outdoor_temperature")
     assert entry is not None
     # Diagnostic signals are off until the user asks for them.
     assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION

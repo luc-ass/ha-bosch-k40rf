@@ -72,8 +72,8 @@ rules:
     comment: >-
       Catalogue resources and their counter components are translated. The
       dynamic /signals branch is device specific and cannot be translated ahead
-      of time; those entities fall back to their signal name and are disabled by
-      default.
+      of time; those entities are named from their id at runtime and are
+      disabled by default.
   exception-translations: done
   icon-translations: todo
   reconfiguration-flow: todo

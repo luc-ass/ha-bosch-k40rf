@@ -168,34 +168,34 @@
         "name": "Device underfloor heating controller assigned to"
       },
       "dhw_circuits_circuit_actual_temp": {
-        "name": "Hot water actual temperature"
+        "name": "Actual temperature"
       },
       "dhw_circuits_circuit_charge_remaining_time": {
-        "name": "Hot water charge remaining time"
+        "name": "Charge remaining time"
       },
       "dhw_circuits_circuit_current_friwa_supply_temperature": {
-        "name": "Hot water current friwa supply temperature"
+        "name": "Current friwa supply temperature"
       },
       "dhw_circuits_circuit_current_setpoint": {
-        "name": "Hot water current setpoint"
+        "name": "Current setpoint"
       },
       "dhw_circuits_circuit_current_temperature_level": {
-        "name": "Hot water current temperature level"
+        "name": "Current temperature level"
       },
       "dhw_circuits_circuit_friwa_primary_pump_modulation": {
-        "name": "Hot water friwa primary pump modulation"
+        "name": "Friwa primary pump modulation"
       },
       "dhw_circuits_circuit_out_temp": {
-        "name": "Hot water out temperature"
+        "name": "Out temperature"
       },
       "dhw_circuits_circuit_overall_status": {
-        "name": "Hot water overall status"
+        "name": "Overall status"
       },
       "dhw_circuits_circuit_tdrunning_status": {
         "name": "Thermal disinfection"
       },
       "dhw_circuits_circuit_volume_flow": {
-        "name": "Hot water volume flow"
+        "name": "Volume flow"
       },
       "gateway_brand": {
         "name": "Gateway brand"
@@ -231,181 +231,181 @@
         "name": "Gateway wifi pairing status"
       },
       "heat_sources_actual_modulation": {
-        "name": "Heat source actual modulation"
+        "name": "Actual modulation"
       },
       "heat_sources_actual_supply_temperature": {
         "name": "Supply temperature"
       },
       "heat_sources_additional_heater_flow_temp": {
-        "name": "Heat source additional heater flow temperature"
+        "name": "Additional heater flow temperature"
       },
       "heat_sources_additional_heater_primary_status": {
-        "name": "Heat source additional heater primary status"
+        "name": "Additional heater primary status"
       },
       "heat_sources_compressor_power_elec_actual": {
-        "name": "Heat source compressor electrical power"
+        "name": "Compressor electrical power"
       },
       "heat_sources_current_supply_setpoint": {
-        "name": "Heat source current supply setpoint"
+        "name": "Current supply setpoint"
       },
       "heat_sources_dhw_cylinder_temperature": {
-        "name": "Heat source hot water cylinder temperature"
+        "name": "Hot water cylinder temperature"
       },
       "heat_sources_dhw_cylinder_upper_temp": {
-        "name": "Heat source hot water cylinder upper temperature"
+        "name": "Hot water cylinder upper temperature"
       },
       "heat_sources_e_heater_power_elec_actual": {
-        "name": "Heat source electric heater electrical power"
+        "name": "Electric heater electrical power"
       },
       "heat_sources_e_heater_power_elec_actual_low_resolution": {
-        "name": "Heat source electric heater electrical power low resolution"
+        "name": "Electric heater electrical power low resolution"
       },
       "heat_sources_em_status": {
         "name": "Energy manager status"
       },
       "heat_sources_emon_ch_consumption": {
-        "name": "Heating energy"
+        "name": "System heating energy"
       },
       "heat_sources_emon_ch_consumption_burner": {
-        "name": "Heating energy burner"
+        "name": "System heating energy burner"
       },
       "heat_sources_emon_ch_consumption_compressor": {
-        "name": "Heating energy compressor"
+        "name": "System heating energy compressor"
       },
       "heat_sources_emon_ch_consumption_eheater": {
-        "name": "Heating energy electric heater"
+        "name": "System heating energy electric heater"
       },
       "heat_sources_emon_ch_consumption_electricity": {
-        "name": "Heating energy electricity"
+        "name": "System heating energy electricity"
       },
       "heat_sources_emon_ch_consumption_output_produced": {
-        "name": "Heating energy produced"
+        "name": "System heating energy produced"
       },
       "heat_sources_emon_cooling_consumption": {
-        "name": "Cooling energy"
+        "name": "System cooling energy"
       },
       "heat_sources_emon_cooling_consumption_compressor": {
-        "name": "Cooling energy compressor"
+        "name": "System cooling energy compressor"
       },
       "heat_sources_emon_cooling_consumption_output_produced": {
-        "name": "Cooling energy produced"
+        "name": "System cooling energy produced"
       },
       "heat_sources_emon_dhw_consumption": {
-        "name": "Hot water energy"
+        "name": "System hot water energy"
       },
       "heat_sources_emon_dhw_consumption_burner": {
-        "name": "Hot water energy burner"
+        "name": "System hot water energy burner"
       },
       "heat_sources_emon_dhw_consumption_compressor": {
-        "name": "Hot water energy compressor"
+        "name": "System hot water energy compressor"
       },
       "heat_sources_emon_dhw_consumption_eheater": {
-        "name": "Hot water energy electric heater"
+        "name": "System hot water energy electric heater"
       },
       "heat_sources_emon_dhw_consumption_electricity": {
-        "name": "Hot water energy electricity"
+        "name": "System hot water energy electricity"
       },
       "heat_sources_emon_dhw_consumption_output_produced": {
-        "name": "Hot water energy produced"
+        "name": "System hot water energy produced"
       },
       "heat_sources_emon_pool_consumption": {
-        "name": "Heat source energy pool consumption"
+        "name": "System pool energy"
       },
       "heat_sources_emon_pool_consumption_compressor": {
-        "name": "Heat source energy pool consumption compressor"
+        "name": "System pool energy compressor"
       },
       "heat_sources_emon_pool_consumption_eheater": {
-        "name": "Heat source energy pool consumption electric heater"
+        "name": "System pool energy electric heater"
       },
       "heat_sources_emon_pool_consumption_output_produced": {
-        "name": "Heat source energy pool consumption produced"
+        "name": "System pool energy produced"
       },
       "heat_sources_emon_total_consumption": {
-        "name": "Total energy"
+        "name": "System total energy"
       },
       "heat_sources_emon_total_consumption_burner": {
-        "name": "Total energy burner"
+        "name": "System total energy burner"
       },
       "heat_sources_emon_total_consumption_compressor": {
-        "name": "Total energy compressor"
+        "name": "System total energy compressor"
       },
       "heat_sources_emon_total_consumption_eheater": {
-        "name": "Total energy electric heater"
+        "name": "System total energy electric heater"
       },
       "heat_sources_emon_total_consumption_electricity": {
-        "name": "Total energy electricity"
+        "name": "System total energy electricity"
       },
       "heat_sources_emon_total_consumption_output_produced": {
-        "name": "Total energy produced"
+        "name": "System total energy produced"
       },
       "heat_sources_emon_total_consumption_solar": {
-        "name": "Total energy solar"
+        "name": "System total energy solar"
       },
       "heat_sources_emon_total_consumption_ventilation": {
-        "name": "Total energy ventilation"
+        "name": "System total energy ventilation"
       },
       "heat_sources_emon_total_consumption_ventilation_heat_recovered": {
-        "name": "Total energy heat recovered"
+        "name": "System total energy heat recovered"
       },
       "heat_sources_external_inputs_input1_state": {
-        "name": "Heat source external inputs input1 state"
+        "name": "External input 1"
       },
       "heat_sources_external_inputs_input2_state": {
-        "name": "Heat source external inputs input2 state"
+        "name": "External input 2"
       },
       "heat_sources_external_inputs_input3_state": {
-        "name": "Heat source external inputs input3 state"
+        "name": "External input 3"
       },
       "heat_sources_external_inputs_input4_state": {
-        "name": "Heat source external inputs input4 state"
+        "name": "External input 4"
       },
       "heat_sources_external_inputs_status_cooling_block": {
-        "name": "Heat source external inputs status cooling block"
+        "name": "External cooling block"
       },
       "heat_sources_fallback_operation_status": {
-        "name": "Heat source fallback operation status"
+        "name": "Fallback operation status"
       },
       "heat_sources_flame_status": {
         "name": "Flame"
       },
       "heat_sources_hybrid_active_heat_source": {
-        "name": "Heat source hybrid active heat source"
+        "name": "Hybrid active heat source"
       },
       "heat_sources_number_of_refrigerant_circuits_online": {
-        "name": "Heat source number of refrigerant circuits online"
+        "name": "Number of refrigerant circuits online"
       },
       "heat_sources_number_of_starts": {
         "name": "Burner starts"
       },
       "heat_sources_pv_contact_state": {
-        "name": "Heat source PV contact state"
+        "name": "PV contact state"
       },
       "heat_sources_return_temperature": {
         "name": "Return temperature"
       },
       "heat_sources_sensors_evaporator_temp_tl1": {
-        "name": "Heat source sensors evaporator temperature tl1"
+        "name": "Evaporator temperature TL1"
       },
       "heat_sources_sensors_evaporator_temp_tl2": {
-        "name": "Heat source sensors evaporator temperature TL2"
+        "name": "Evaporator temperature TL2"
       },
       "heat_sources_smart_function_active": {
         "name": "Smart function"
       },
       "heat_sources_source_brine_circuit_collector_inflow_temp": {
-        "name": "Heat source brine circuit collector inflow temperature"
+        "name": "Brine circuit collector inflow temperature"
       },
       "heat_sources_source_brine_circuit_collector_outflow_temp": {
-        "name": "Heat source brine circuit collector outflow temperature"
+        "name": "Brine circuit collector outflow temperature"
       },
       "heat_sources_source_brine_circuit_pressure": {
-        "name": "Heat source brine circuit pressure"
+        "name": "Brine circuit pressure"
       },
       "heat_sources_source_brine_circuit_pump_speed": {
-        "name": "Heat source brine circuit pump speed"
+        "name": "Brine circuit pump speed"
       },
       "heat_sources_source_brine_circuit_volume_flow": {
-        "name": "Heat source brine circuit volume flow"
+        "name": "Brine circuit volume flow"
       },
       "heat_sources_source_e_heater_status": {
         "name": "Electric heater status"
@@ -456,118 +456,118 @@
         "name": "Compressor starts total"
       },
       "heat_sources_source_odu_fan_speed": {
-        "name": "Heat source outdoor unit fan speed"
+        "name": "Outdoor unit fan speed"
       },
       "heat_sources_source_pump_volume_flow": {
-        "name": "Heat source pump volume flow"
+        "name": "Pump volume flow"
       },
       "heat_sources_source_refrigerant_compressor_actual_speed": {
-        "name": "Heat source refrigerant compressor actual speed"
+        "name": "Refrigerant compressor actual speed"
       },
       "heat_sources_source_refrigerant_compressor_elec_power_actual": {
-        "name": "Heat source refrigerant compressor electrical power actual"
+        "name": "Refrigerant compressor electrical power actual"
       },
       "heat_sources_source_refrigerant_compressor_temp": {
-        "name": "Heat source refrigerant compressor temperature"
+        "name": "Refrigerant compressor temperature"
       },
       "heat_sources_source_refrigerant_heat_carrier_pump_speed": {
-        "name": "Heat source refrigerant heat carrier pump speed"
+        "name": "Refrigerant heat carrier pump speed"
       },
       "heat_sources_source_refrigerant_high_pressure_temp": {
-        "name": "Heat source refrigerant high pressure temperature"
+        "name": "Refrigerant high pressure temperature"
       },
       "heat_sources_source_refrigerant_hot_gas_temp": {
-        "name": "Heat source refrigerant hot gas temperature"
+        "name": "Refrigerant hot gas temperature"
       },
       "heat_sources_source_refrigerant_liquid_pipe_cooling_temp": {
-        "name": "Heat source refrigerant liquid pipe cooling temperature"
+        "name": "Refrigerant liquid pipe cooling temperature"
       },
       "heat_sources_source_refrigerant_liquid_pipe_heating_temp": {
-        "name": "Heat source refrigerant liquid pipe heating temperature"
+        "name": "Refrigerant liquid pipe heating temperature"
       },
       "heat_sources_source_refrigerant_low_pressure_temp": {
-        "name": "Heat source refrigerant low pressure temperature"
+        "name": "Refrigerant low pressure temperature"
       },
       "heat_sources_source_refrigerant_status": {
-        "name": "Heat source refrigerant status"
+        "name": "Refrigerant status"
       },
       "heat_sources_source_refrigerant_suction_gas_temp": {
-        "name": "Heat source refrigerant suction gas temperature"
+        "name": "Refrigerant suction gas temperature"
       },
       "heat_sources_source_return_flow_temp": {
-        "name": "Heat source return flow temperature"
+        "name": "Return flow temperature"
       },
       "heat_sources_source_safety_board_status": {
-        "name": "Heat source safety board status"
+        "name": "Safety board status"
       },
       "heat_sources_source_supply_flow_condenser_temp": {
-        "name": "Heat source supply flow condenser temperature"
+        "name": "Supply flow condenser temperature"
       },
       "heat_sources_source_working_time": {
-        "name": "Heat source working time"
+        "name": "Working time"
       },
       "heat_sources_source_working_time_ch": {
-        "name": "Heat source working time heating"
+        "name": "Working time heating"
       },
       "heat_sources_source_working_time_cooling": {
-        "name": "Heat source working time cooling"
+        "name": "Working time cooling"
       },
       "heat_sources_source_working_time_dhw": {
-        "name": "Heat source working time hot water"
+        "name": "Working time hot water"
       },
       "heat_sources_source_working_time_pool": {
-        "name": "Heat source working time pool"
+        "name": "Working time pool"
       },
       "heat_sources_source_working_time_total": {
-        "name": "Heat source working time total"
+        "name": "Working time total"
       },
       "heat_sources_system_pressure": {
         "name": "System pressure"
       },
       "heat_sources_working_time_total_system": {
-        "name": "Heat source working time total system"
+        "name": "Working time total system"
       },
       "heating_circuits_circuit_actual_humidity": {
-        "name": "Heating circuit actual humidity"
+        "name": "Actual humidity"
       },
       "heating_circuits_circuit_boost_remaining_time": {
-        "name": "Heating circuit boost remaining time"
+        "name": "Boost remaining time"
       },
       "heating_circuits_circuit_current_room_setpoint": {
-        "name": "Heating circuit current room setpoint"
+        "name": "Current room setpoint"
       },
       "heating_circuits_circuit_current_su_wi_mode": {
         "name": "Summer/winter mode"
       },
       "heating_circuits_circuit_max_flow_temp": {
-        "name": "Heating circuit max flow temperature"
+        "name": "Max flow temperature"
       },
       "heating_circuits_circuit_mixer_position": {
-        "name": "Heating circuit mixer position"
+        "name": "Mixer position"
       },
       "heating_circuits_circuit_overall_status": {
-        "name": "Heating circuit overall status"
+        "name": "Overall status"
       },
       "heating_circuits_circuit_pump_status": {
         "name": "Circulation pump"
       },
       "heating_circuits_circuit_roomtemperature": {
-        "name": "Heating circuit room temperature"
+        "name": "Room temperature"
       },
       "pool_current_temp": {
         "name": "Pool current temperature"
       },
       "solar_circuits_circuit_collector_temperature": {
-        "name": "Solar circuit collector temperature"
+        "name": "Collector temperature"
       },
       "solar_circuits_circuit_dhw_tank_bottom_temperature": {
-        "name": "Solar circuit hot water tank bottom temperature"
+        "name": "Hot water tank bottom temperature"
       },
       "solar_circuits_circuit_pump_modulation": {
-        "name": "Solar circuit pump modulation"
+        "name": "Pump modulation"
       },
       "solar_circuits_circuit_solar_yield": {
-        "name": "Solar circuit solar yield"
+        "name": "Solar yield"
       },
       "system_bus": {
         "name": "System bus"
@@ -708,64 +708,64 @@
         "name": "System variable tariff tariff ID"
       },
       "ventilation_zone_appliance_run_time": {
-        "name": "Ventilation appliance run time"
+        "name": "Appliance run time"
       },
       "ventilation_zone_el_aux_heater_power": {
-        "name": "Ventilation electrical auxiliary heater power"
+        "name": "Auxiliary heater power"
       },
       "ventilation_zone_electrical_aux_heater_power": {
-        "name": "Ventilation electrical auxiliary heater power"
+        "name": "Electrical auxiliary heater power"
       },
       "ventilation_zone_exhaust_fan_level": {
-        "name": "Ventilation exhaust fan level"
+        "name": "Exhaust fan level"
       },
       "ventilation_zone_exhaust_fan_power": {
-        "name": "Ventilation exhaust fan power"
+        "name": "Exhaust fan power"
       },
       "ventilation_zone_exhaust_fan_speed": {
-        "name": "Ventilation exhaust fan speed"
+        "name": "Exhaust fan speed"
       },
       "ventilation_zone_filter_remaining_time": {
-        "name": "Ventilation filter remaining time"
+        "name": "Filter remaining time"
       },
       "ventilation_zone_max_indoor_air_quality": {
-        "name": "Ventilation max indoor air quality"
+        "name": "Max indoor air quality"
       },
       "ventilation_zone_max_relative_humidity": {
-        "name": "Ventilation max relative humidity"
+        "name": "Max relative humidity"
       },
       "ventilation_zone_sensors_exhaust_temp": {
-        "name": "Ventilation sensors exhaust temperature"
+        "name": "Exhaust temperature"
       },
       "ventilation_zone_sensors_external_air_quality": {
-        "name": "Ventilation sensors external air quality"
+        "name": "External air quality"
       },
       "ventilation_zone_sensors_external_humidity": {
-        "name": "Ventilation sensors external humidity"
+        "name": "External humidity"
       },
       "ventilation_zone_sensors_extract_temp": {
-        "name": "Ventilation sensors extract temperature"
+        "name": "Extract temperature"
       },
       "ventilation_zone_sensors_internal_air_quality": {
-        "name": "Ventilation sensors internal air quality"
+        "name": "Internal air quality"
       },
       "ventilation_zone_sensors_internal_humidity": {
-        "name": "Ventilation sensors internal humidity"
+        "name": "Internal humidity"
       },
       "ventilation_zone_sensors_outdoor_temp": {
-        "name": "Ventilation sensors outdoor temperature"
+        "name": "Outdoor temperature"
       },
       "ventilation_zone_sensors_supply_fan_rotation": {
-        "name": "Ventilation sensors supply fan rotation"
+        "name": "Supply fan rotation"
       },
       "ventilation_zone_sensors_supply_temp": {
-        "name": "Ventilation sensors supply temperature"
+        "name": "Supply temperature"
       },
       "ventilation_zone_summer_bypass_flap_power": {
-        "name": "Ventilation summer bypass flap power"
+        "name": "Summer bypass flap power"
       },
       "ventilation_zone_supply_fan_power": {
-        "name": "Ventilation supply fan power"
+        "name": "Supply fan power"
       },
       "zones_zone_average_actual_humidity": {
         "name": "Zone average actual humidity"

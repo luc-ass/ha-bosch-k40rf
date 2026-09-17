@@ -22,7 +22,7 @@ from .binary_resources import BY_TEMPLATE as BINARY_RESOURCE_PATHS
 from .coordinator import K40BaseCoordinator
 from .devices import DeviceTree
 from .entity import K40Entity
-from .naming import component_key, component_name, english_name, translation_key
+from .naming import component_key, component_name, english_name, signal_name, translation_key
 from .resources import ResourceCandidate
 from .types import K40ConfigEntry, K40RuntimeData
 from .units import mapping_for
@@ -87,12 +87,13 @@ def _build_signal_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Itera
     coordinator = runtime.signal_coordinator
     gateway_id = runtime.gateway_id
     for path in coordinator.paths:
-        device_info = devices.for_signal(path)
+        device_info, name_parts = devices.signal_target(path)
         resource = (coordinator.data or {}).get(path)
-        name = path.rsplit("/", 1)[-1]
         description = SensorEntityDescription(
             key=_key_for(path),
-            name=name,
+            # The id is the fallback: a name is better, but never at the cost
+            # of an entity with none at all.
+            name=signal_name(name_parts) or path.rsplit("/", 1)[-1],
             entity_category=EntityCategory.DIAGNOSTIC,
             entity_registry_enabled_default=False,
         )

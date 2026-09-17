@@ -66,11 +66,15 @@ _FAMILIES: dict[str, _Family] = {
 #: Suffix of the translation key used when a branch has more than one id.
 _NUMBERED = "_numbered"
 
-#: Leading segment of a /signals id -> the branch it reports on. What is left
-#: (SC for the system controller, GWEEBUS for the bus) belongs to the gateway.
-_SIGNAL_BRANCHES: dict[str, str] = {
-    "SRC": "heatSources",
-    "VENTILATION": "ventilation",
+#: Leading segment of a /signals id -> the branch it reports on, and how that
+#: segment reads when it has to stay in the name because the reading ended up
+#: on the gateway after all. SC is the system controller and GWEEBUS the bus;
+#: neither is a device, but SC.HC1.* still names a circuit.
+_SIGNAL_HEADS: dict[str, tuple[str | None, str]] = {
+    "SRC": ("heatSources", "heat source"),
+    "SC": (None, "system"),
+    "VENTILATION": ("ventilation", "ventilation"),
+    "GWEEBUS": (None, "EMS bus"),
 }
 
 #: A segment of a /signals id that names a circuit: SC.HC1.FlowTempSetp is the
@@ -122,27 +126,49 @@ class DeviceTree:
         return self.for_resource(candidate.path, candidate.circuit_id)
 
     def for_signal(self, path: str) -> DeviceInfo:
-        """Return the device a /signals reading belongs on.
+        """Return the device a /signals reading belongs on."""
+        return self.signal_target(path)[0]
+
+    def signal_target(self, path: str) -> tuple[DeviceInfo, tuple[str, ...]]:
+        """Return the device a /signals reading belongs on, and its name parts.
 
         Signals are raw controller variables, and unlike the catalogue they
-        carry no path structure -- but their names do: VENTILATION.FrostProt
+        carry no path structure -- but their ids do: VENTILATION.FrostProt
         .PreHeatPower is the ventilation unit's, SC.HC1.FlowTempSetp the first
         heating circuit's. Whatever cannot be placed stays on the gateway.
+
+        Whatever the device ends up saying is dropped from the name parts, so
+        the ventilation unit shows "Frost protection pre heat power" instead of
+        repeating itself. A segment naming something this installation does not
+        have is kept, so the entity still says which circuit it meant.
         """
         segments = path.rsplit("/", 1)[-1].split(".")
-        for segment in segments:
-            if match := _SIGNAL_CIRCUIT_SEGMENT.match(segment):
+        head, label = _SIGNAL_HEADS.get(segments[0], (None, ""))
+        rest = segments[1:] if segments[0] in _SIGNAL_HEADS else segments
+
+        device: DeviceInfo | None = None
+        kept: list[str] = []
+        for segment in rest:
+            match = _SIGNAL_CIRCUIT_SEGMENT.match(segment)
+            if device is None and match is not None:
                 branch, prefix = _SIGNAL_CIRCUITS[match.group(1)]
                 device = self.branches.get((branch, f"{prefix}{match.group(2)}"))
                 if device is not None:
-                    return device
-        if (reported_on := _SIGNAL_BRANCHES.get(segments[0])) is not None:
+                    continue
+            kept.append(segment)
+
+        if device is None and head is not None:
             # An unnumbered signal belongs to the branch's device where there
             # is only one of it; with a cascade it names none of them.
-            devices = [device for (name, _), device in self.branches.items() if name == reported_on]
-            if len(devices) == 1:
-                return devices[0]
-        return self.hub
+            candidates = [device for (name, _), device in self.branches.items() if name == head]
+            if len(candidates) == 1:
+                device = candidates[0]
+
+        if device is not None:
+            return device, tuple(kept)
+        # On the gateway the head has to carry its own weight: without it,
+        # SRC.OutdoorTemp would read like the system's own outdoor reading.
+        return self.hub, tuple([label, *kept] if label else kept)
 
 
 def build_hub(gateway_id: str, system_info: SystemInfo, firmware: str | None = None) -> DeviceInfo:
