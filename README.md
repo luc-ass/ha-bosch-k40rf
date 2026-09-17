@@ -80,7 +80,12 @@ submission carries:
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
+| `manifest.json` → `requirements` | `pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.0` | `pyk40rf==0.1.0`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
+
+`pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.
+Core requires a PyPI release (`dependency-transparency`), so that line has to
+change before submission.
 
 ## Development
 
