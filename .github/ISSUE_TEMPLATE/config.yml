@@ -1,0 +1,10 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Bosch's own API documentation and discussions
+    url: https://github.com/bosch-home-comfort/api-docs/discussions
+    about: >-
+      Questions about the device API itself -- endpoints, write access, firmware
+      -- belong with Bosch, not here. Their maintainers answer there.
+  - name: Home Assistant community forum
+    url: https://community.home-assistant.io/
+    about: Setup help and questions about Home Assistant itself.

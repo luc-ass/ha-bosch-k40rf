@@ -1,0 +1,43 @@
+name: Bug report
+description: Something is broken or reports a wrong value
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Integration version
+      placeholder: "0.1.6"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: >-
+        Settings -> System -> Logs -> Load full logs, then search for
+        `bosch_k40rf`. Turn on debug logging first if the log says nothing:
+        Settings -> Devices & services -> Bosch K 40 RF -> Enable debug logging.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: >-
+        Download diagnostics from the integration page and attach the file
+        (rename to `.txt` or zip it). It carries no token, gateway id or serial
+        number, but it does carry your heating readings -- have a look first.
+    validations:
+      required: false

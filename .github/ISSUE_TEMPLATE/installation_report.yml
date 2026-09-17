@@ -1,0 +1,66 @@
+name: Installation report
+description: Tell us about a heating system this integration has never seen
+title: "[Installation] "
+labels: ["installation-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This integration was written against **one** installation: a single
+        air-to-water heat pump with one heating circuit, hot water and
+        mechanical ventilation. A cascade, a solar circuit, a pool, a gas or
+        oil boiler, a second heating circuit, radio thermostats -- all of that
+        follows Bosch's published spec and has never met real hardware.
+
+        Your diagnostics file is the only way we can find out what those
+        systems actually answer. It takes two clicks and it is the single most
+        useful thing you can send.
+
+  - type: textarea
+    id: system
+    attributes:
+      label: What kind of system is it?
+      description: >-
+        Appliance name from the front panel, and anything the integration could
+        not know -- second building, pool, solar, cascade, who installed it.
+      placeholder: |
+        Buderus Logatherm WLW186i, two heating circuits, a solar circuit and a
+        buffer tank. Gateway firmware 15.00.01.
+    validations:
+      required: true
+
+  - type: textarea
+    id: wrong
+    attributes:
+      label: Anything that looks wrong?
+      description: >-
+        Entities missing, a value that cannot be right, a device named
+        strangely, a sensor that says "unknown" while the panel shows a number.
+        Leave empty if it all just works -- that is a useful report too.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ## The diagnostics file
+
+        **Settings -> Devices & services -> Bosch K 40 RF -> ... -> Download diagnostics**
+
+        The file deliberately leaves out your token, your gateway id and the
+        serial numbers. It does contain the readings of your heating system --
+        temperatures, energy counters, which circuits exist. Have a look before
+        you attach it; if something in there is more personal than you expected,
+        say so in the issue instead of attaching it and we will work out what is
+        needed.
+
+        Drag the file into the box below. GitHub will not take `.json`
+        directly -- rename it to `.txt`, or zip it.
+
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Attach the file here (drag and drop).
+    validations:
+      required: true

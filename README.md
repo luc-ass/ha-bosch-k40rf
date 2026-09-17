@@ -129,13 +129,47 @@ request, so a poll is dozens of small requests; at most four run at a time.
 
 History (`/recordings`) is not polled at all.
 
+## Tested installations
+
+The integration declares every resource Bosch's spec describes -- 204 of them --
+but only **101 have ever answered on real hardware**, all of it the same
+installation. The rest is written against the spec, and the spec has been wrong
+twice already.
+
+| Appliance | System | Circuits | Firmware | Confirmed |
+|---|---|---|---|---|
+| Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
+
+**If your system is not in this table, a diagnostics file from it is the most
+useful thing you can send** -- particularly a cascade, solar, a pool, a gas or
+oil boiler, several heating circuits, zones with radio thermostats, or a
+Buderus-branded system.
+
+Settings -> Devices & services -> Bosch K 40 RF -> ... -> **Download
+diagnostics**, then open an [installation
+report](https://github.com/luc-ass/ha-bosch-k40rf/issues/new?template=installation_report.yml).
+The file leaves out your token, gateway id and serial numbers; it does contain
+your heating readings, so have a look before attaching it.
+
+What happens to it: `tools/report_from_diagnostics.py` turns the file into a
+list of what your system confirms that ours never had, what it serves that the
+catalogue does not declare, and what its `/signals` branch looks like. That
+usually becomes a commit the same day, and your system joins the table.
+
 ## Known limitations
 
 - **Read-only.** Every field the device exposes is marked non-writable, so
-  there are no climate or water-heater entities, and no actions.
-- Developed against one installation (air-to-water heat pump, one heating
-  circuit, mechanical ventilation with heat recovery). Solar, pool and cascade
-  setups follow the spec but are untested -- reports welcome.
+  there are no climate or water-heater entities, and no actions. In Bosch's own
+  API discussion a maintainer wrote that "write access for the Local API is
+  definitely on our radar for the future" and that a web API with write access
+  is planned "in the coming months", with safeguards and no date
+  ([discussion](https://github.com/bosch-home-comfort/api-docs/discussions/2), 16 Sep 2026). Nothing to build on yet, but the shape of
+  this integration -- all API calls in `pyk40rf`, entities derived from the
+  spec -- is what makes adding writable entities a small change rather than a
+  rewrite.
+- **One installation tested.** Solar, pool, cascade, several circuits and
+  radio thermostats follow the spec but have never met hardware -- see [Tested
+  installations](#tested-installations) for what a report needs.
 - Historical data is available from the API but is not yet imported into
   long-term statistics.
 
@@ -148,7 +182,7 @@ submission carries:
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
-| `manifest.json` → `requirements` | `pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.0` | `pyk40rf==0.1.0`, from PyPI |
+| `manifest.json` → `requirements` | `pyk40rf@git+https://github.com/luc-ass/pyk40rf@v0.1.3` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
 `pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.
@@ -170,6 +204,17 @@ The resource catalogue and the entity names in `strings.json` are generated:
 python tools/generate_catalog.py    # from the API spec + a live harvest
 python tools/generate_strings.py    # entity names, from the catalogue
 ```
+
+A diagnostics file from somebody else's heating system is read with:
+
+```bash
+python tools/report_from_diagnostics.py diagnostics.json
+```
+
+It says what that installation confirms, what it serves that the catalogue does
+not declare, and what its `/signals` branch looks like. Newly confirmed
+resources belong in the catalogue as `live_confirmed`, which
+`generate_catalog.py` writes from a harvest.
 
 ## License
 

@@ -154,6 +154,10 @@ KEEP_UPPER = {
     "TL2",
     # Acronyms of the /signals ids that the API never spells out. Guessing at
     # them would be worse than leaving them as the controller writes them.
+    # CUHP is the heat pump's control unit -- its SRC.CUHP.Stats.ControlUnit
+    # counter matches the installation date to the day, and everything under it
+    # is the generator's own internals. It stays an acronym anyway: it is what
+    # the controller logs show, and "control unit" adds a word, not a meaning.
     "CUHP",
     "EM",
     "EMS",
