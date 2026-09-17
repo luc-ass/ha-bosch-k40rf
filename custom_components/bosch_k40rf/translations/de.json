@@ -1,0 +1,70 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Mit dem K 40 RF verbinden",
+        "description": "Gib die Adresse des Gateways ein. Es ist das Connect-Key-Modul in deiner Heizungsanlage und muss im lokalen Netzwerk erreichbar sein.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Gateways."
+        }
+      },
+      "discovery_confirm": {
+        "title": "K 40 RF gefunden",
+        "description": "Unter {host} wurde ein Gateway mit der Geräte-ID {device_id} gefunden. Jetzt einrichten?"
+      },
+      "credentials": {
+        "title": "Gerätezugangsdaten",
+        "description": "Beide Werte stehen auf dem Aufkleber deines Connect-Key-Moduls.",
+        "data": {
+          "username": "Login",
+          "password": "Passwort"
+        },
+        "data_description": {
+          "username": "Der Login vom Aufkleber. Es ist dieselbe Nummer wie im Gerätenamen.",
+          "password": "Das Passwort vom Aufkleber, in der Form aaaa-bbbb-cccc-dddd. Die Bindestriche sind optional."
+        }
+      },
+      "proximity": {
+        "title": "Tasten am Gateway drücken",
+        "description": "Drücke am Gateway unter {host} die WLAN- und die Funk-Taste etwa eine Sekunde lang gleichzeitig, bis die blaue LED leuchtet. Fahre dann innerhalb von fünf Minuten fort.\n\nDas Gateway gibt einen Token nur an ein Gerät im eigenen Netz aus. Läuft Home Assistant woanders, besorge den Token separat und füge ihn unten ein.",
+        "data": {
+          "token": "Vorhandener Token (optional)"
+        },
+        "data_description": {
+          "token": "Leer lassen, außer Home Assistant läuft außerhalb des Gateway-Netzes."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Erneut mit dem Gateway verbinden",
+        "description": "Das Gateway unter {host} akzeptiert den gespeicherten Token nicht mehr. Gib das Passwort vom Aufkleber erneut ein, um einen neuen zu holen.",
+        "data": {
+          "password": "Passwort"
+        }
+      }
+    },
+    "error": {
+      "proximity_required": "Das Gateway hat abgelehnt: Drücke WLAN- und Funk-Taste etwa eine Sekunde lang gleichzeitig und versuche es direkt danach erneut. Das schlägt auch fehl, wenn Home Assistant nicht im selben Netz wie das Gateway läuft.",
+      "invalid_auth": "Das Gateway hat diese Zugangsdaten abgelehnt. Prüfe Login und Passwort auf dem Aufkleber.",
+      "invalid_password_format": "Das Passwort sollte wie aaaa-bbbb-cccc-dddd aussehen.",
+      "cannot_connect": "Das Gateway ist nicht erreichbar. Prüfe die Adresse und ob es eingeschaltet ist.",
+      "unknown": "Unerwarteter Fehler"
+    },
+    "abort": {
+      "already_configured": "Dieses Gateway ist bereits eingerichtet.",
+      "not_a_gateway": "Das gefundene Gerät ist kein K-40-RF-Gateway.",
+      "reauth_successful": "Verbindung zum Gateway wiederhergestellt."
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "Das Gateway akzeptiert den gespeicherten Token nicht mehr."
+    },
+    "cannot_connect": {
+      "message": "Gateway nicht erreichbar: {error}"
+    }
+  }
+}

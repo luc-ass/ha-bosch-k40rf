@@ -1,0 +1,761 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Connect to your K 40 RF",
+        "description": "Enter the address of the gateway. It is the Connect-Key module in your heating system, and it must be reachable on your local network.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "The gateway's IP address or hostname."
+        }
+      },
+      "discovery_confirm": {
+        "title": "K 40 RF found",
+        "description": "A gateway with the device ID {device_id} was found at {host}. Set it up now?"
+      },
+      "credentials": {
+        "title": "Device credentials",
+        "description": "Both values are printed on the sticker on your Connect-Key module.",
+        "data": {
+          "username": "Login",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The login from the sticker. It is the same number as in the device name.",
+          "password": "The sticker password, in the form aaaa-bbbb-cccc-dddd. The dashes are optional."
+        }
+      },
+      "proximity": {
+        "title": "Press the buttons on the gateway",
+        "description": "Press the WLAN and radio buttons on the gateway at {host} together for about a second, until the blue LED lights up. Then continue within five minutes.\n\nThe gateway only hands out a token to a device on its own network. If Home Assistant is somewhere else, obtain the token separately and paste it below.",
+        "data": {
+          "token": "Existing token (optional)"
+        },
+        "data_description": {
+          "token": "Leave empty unless Home Assistant runs outside the gateway's network."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect to the gateway",
+        "description": "The gateway at {host} no longer accepts the stored token. Enter the sticker password again to obtain a new one.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "proximity_required": "The gateway refused: press the WLAN and radio buttons together for about a second, then try again straight away. This also fails if Home Assistant is not on the same network as the gateway.",
+      "invalid_auth": "The gateway rejected these credentials. Check the login and password on the sticker.",
+      "invalid_password_format": "The password should look like aaaa-bbbb-cccc-dddd.",
+      "cannot_connect": "Cannot reach the gateway. Check the address and that it is switched on.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This gateway is already set up.",
+      "not_a_gateway": "The discovered device is not a K 40 RF gateway.",
+      "reauth_successful": "Reconnected to the gateway."
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "The gateway no longer accepts the stored token."
+    },
+    "cannot_connect": {
+      "message": "Cannot reach the gateway: {error}"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "devices_device_actual_humidity": {
+        "name": "Device actual humidity"
+      },
+      "devices_device_actuator_modulation": {
+        "name": "Device actuator modulation"
+      },
+      "devices_device_actuator_power": {
+        "name": "Device actuator power"
+      },
+      "devices_device_assigned_hc": {
+        "name": "Device assigned heating circuit"
+      },
+      "devices_device_battery": {
+        "name": "Device battery"
+      },
+      "devices_device_current_room_setpoint": {
+        "name": "Device current room setpoint"
+      },
+      "devices_device_name": {
+        "name": "Device name"
+      },
+      "devices_device_operation_mode": {
+        "name": "Device operation mode"
+      },
+      "devices_device_rf_connection_status": {
+        "name": "Radio connection"
+      },
+      "devices_device_rf_error_cause": {
+        "name": "Device radio error cause"
+      },
+      "devices_device_rf_paired_status": {
+        "name": "Device radio paired status"
+      },
+      "devices_device_rf_timeof_connection_lost": {
+        "name": "Device radio time of connection lost"
+      },
+      "devices_device_roomtemperature": {
+        "name": "Device room temperature"
+      },
+      "devices_device_sgtin": {
+        "name": "Device sgtin"
+      },
+      "devices_device_signal": {
+        "name": "Device signal"
+      },
+      "devices_device_signal_icon": {
+        "name": "Device signal icon"
+      },
+      "devices_device_type": {
+        "name": "Device type"
+      },
+      "devices_device_version_firmware": {
+        "name": "Device version firmware"
+      },
+      "devices_device_zone_id": {
+        "name": "Device zone ID"
+      },
+      "devices_inclusion_time": {
+        "name": "Device inclusion time"
+      },
+      "devices_rhc_assigned_to": {
+        "name": "Device room heating controller assigned to"
+      },
+      "devices_uhc_assigned_to": {
+        "name": "Device underfloor heating controller assigned to"
+      },
+      "dhw_circuits_circuit_actual_temp": {
+        "name": "Hot water actual temperature"
+      },
+      "dhw_circuits_circuit_charge_remaining_time": {
+        "name": "Hot water charge remaining time"
+      },
+      "dhw_circuits_circuit_current_friwa_supply_temperature": {
+        "name": "Hot water current friwa supply temperature"
+      },
+      "dhw_circuits_circuit_current_setpoint": {
+        "name": "Hot water current setpoint"
+      },
+      "dhw_circuits_circuit_current_temperature_level": {
+        "name": "Hot water current temperature level"
+      },
+      "dhw_circuits_circuit_friwa_primary_pump_modulation": {
+        "name": "Hot water friwa primary pump modulation"
+      },
+      "dhw_circuits_circuit_out_temp": {
+        "name": "Hot water out temperature"
+      },
+      "dhw_circuits_circuit_overall_status": {
+        "name": "Hot water overall status"
+      },
+      "dhw_circuits_circuit_tdrunning_status": {
+        "name": "Thermal disinfection"
+      },
+      "dhw_circuits_circuit_volume_flow": {
+        "name": "Hot water volume flow"
+      },
+      "gateway_brand": {
+        "name": "Gateway brand"
+      },
+      "gateway_data_processing_status": {
+        "name": "Gateway data processing status"
+      },
+      "gateway_eth_ip_ipv4": {
+        "name": "Ethernet IPv4 address"
+      },
+      "gateway_eth_mac": {
+        "name": "Ethernet MAC address"
+      },
+      "gateway_tz_info_time_zone": {
+        "name": "Time zone"
+      },
+      "gateway_version_firmware": {
+        "name": "Firmware version"
+      },
+      "gateway_version_hardware": {
+        "name": "Hardware version"
+      },
+      "gateway_wifi_hotspot_remaining_time": {
+        "name": "Gateway wifi hotspot remaining time"
+      },
+      "gateway_wifi_ip_ipv4": {
+        "name": "Wi-Fi IPv4 address"
+      },
+      "gateway_wifi_mac": {
+        "name": "Wi-Fi MAC address"
+      },
+      "gateway_wifi_pairing_status": {
+        "name": "Gateway wifi pairing status"
+      },
+      "heat_sources_actual_modulation": {
+        "name": "Heat source actual modulation"
+      },
+      "heat_sources_actual_supply_temperature": {
+        "name": "Supply temperature"
+      },
+      "heat_sources_additional_heater_flow_temp": {
+        "name": "Heat source additional heater flow temperature"
+      },
+      "heat_sources_additional_heater_primary_status": {
+        "name": "Heat source additional heater primary status"
+      },
+      "heat_sources_compressor_power_elec_actual": {
+        "name": "Heat source compressor electrical power"
+      },
+      "heat_sources_current_supply_setpoint": {
+        "name": "Heat source current supply setpoint"
+      },
+      "heat_sources_dhw_cylinder_temperature": {
+        "name": "Heat source hot water cylinder temperature"
+      },
+      "heat_sources_dhw_cylinder_upper_temp": {
+        "name": "Heat source hot water cylinder upper temperature"
+      },
+      "heat_sources_e_heater_power_elec_actual": {
+        "name": "Heat source electric heater electrical power"
+      },
+      "heat_sources_e_heater_power_elec_actual_low_resolution": {
+        "name": "Heat source electric heater electrical power low resolution"
+      },
+      "heat_sources_em_status": {
+        "name": "Energy manager status"
+      },
+      "heat_sources_emon_ch_consumption": {
+        "name": "Heating energy"
+      },
+      "heat_sources_emon_ch_consumption_burner": {
+        "name": "Heating energy burner"
+      },
+      "heat_sources_emon_ch_consumption_compressor": {
+        "name": "Heating energy compressor"
+      },
+      "heat_sources_emon_ch_consumption_eheater": {
+        "name": "Heating energy electric heater"
+      },
+      "heat_sources_emon_ch_consumption_electricity": {
+        "name": "Heating energy electricity"
+      },
+      "heat_sources_emon_ch_consumption_output_produced": {
+        "name": "Heating energy produced"
+      },
+      "heat_sources_emon_cooling_consumption": {
+        "name": "Cooling energy"
+      },
+      "heat_sources_emon_cooling_consumption_compressor": {
+        "name": "Cooling energy compressor"
+      },
+      "heat_sources_emon_cooling_consumption_output_produced": {
+        "name": "Cooling energy produced"
+      },
+      "heat_sources_emon_dhw_consumption": {
+        "name": "Hot water energy"
+      },
+      "heat_sources_emon_dhw_consumption_burner": {
+        "name": "Hot water energy burner"
+      },
+      "heat_sources_emon_dhw_consumption_compressor": {
+        "name": "Hot water energy compressor"
+      },
+      "heat_sources_emon_dhw_consumption_eheater": {
+        "name": "Hot water energy electric heater"
+      },
+      "heat_sources_emon_dhw_consumption_electricity": {
+        "name": "Hot water energy electricity"
+      },
+      "heat_sources_emon_dhw_consumption_output_produced": {
+        "name": "Hot water energy produced"
+      },
+      "heat_sources_emon_pool_consumption": {
+        "name": "Heat source energy pool consumption"
+      },
+      "heat_sources_emon_pool_consumption_compressor": {
+        "name": "Heat source energy pool consumption compressor"
+      },
+      "heat_sources_emon_pool_consumption_eheater": {
+        "name": "Heat source energy pool consumption electric heater"
+      },
+      "heat_sources_emon_pool_consumption_output_produced": {
+        "name": "Heat source energy pool consumption produced"
+      },
+      "heat_sources_emon_total_consumption": {
+        "name": "Total energy"
+      },
+      "heat_sources_emon_total_consumption_burner": {
+        "name": "Total energy burner"
+      },
+      "heat_sources_emon_total_consumption_compressor": {
+        "name": "Total energy compressor"
+      },
+      "heat_sources_emon_total_consumption_eheater": {
+        "name": "Total energy electric heater"
+      },
+      "heat_sources_emon_total_consumption_electricity": {
+        "name": "Total energy electricity"
+      },
+      "heat_sources_emon_total_consumption_output_produced": {
+        "name": "Total energy produced"
+      },
+      "heat_sources_emon_total_consumption_solar": {
+        "name": "Total energy solar"
+      },
+      "heat_sources_emon_total_consumption_ventilation": {
+        "name": "Total energy ventilation"
+      },
+      "heat_sources_emon_total_consumption_ventilation_heat_recovered": {
+        "name": "Total energy heat recovered"
+      },
+      "heat_sources_external_inputs_input1_state": {
+        "name": "Heat source external inputs input1 state"
+      },
+      "heat_sources_external_inputs_input2_state": {
+        "name": "Heat source external inputs input2 state"
+      },
+      "heat_sources_external_inputs_input3_state": {
+        "name": "Heat source external inputs input3 state"
+      },
+      "heat_sources_external_inputs_input4_state": {
+        "name": "Heat source external inputs input4 state"
+      },
+      "heat_sources_external_inputs_status_cooling_block": {
+        "name": "Heat source external inputs status cooling block"
+      },
+      "heat_sources_fallback_operation_status": {
+        "name": "Heat source fallback operation status"
+      },
+      "heat_sources_flame_status": {
+        "name": "Flame"
+      },
+      "heat_sources_hybrid_active_heat_source": {
+        "name": "Heat source hybrid active heat source"
+      },
+      "heat_sources_number_of_refrigerant_circuits_online": {
+        "name": "Heat source number of refrigerant circuits online"
+      },
+      "heat_sources_number_of_starts": {
+        "name": "Burner starts"
+      },
+      "heat_sources_pv_contact_state": {
+        "name": "Heat source PV contact state"
+      },
+      "heat_sources_return_temperature": {
+        "name": "Return temperature"
+      },
+      "heat_sources_sensors_evaporator_temp_tl1": {
+        "name": "Heat source sensors evaporator temperature tl1"
+      },
+      "heat_sources_sensors_evaporator_temp_tl2": {
+        "name": "Heat source sensors evaporator temperature TL2"
+      },
+      "heat_sources_smart_function_active": {
+        "name": "Smart function"
+      },
+      "heat_sources_source_brine_circuit_collector_inflow_temp": {
+        "name": "Heat source brine circuit collector inflow temperature"
+      },
+      "heat_sources_source_brine_circuit_collector_outflow_temp": {
+        "name": "Heat source brine circuit collector outflow temperature"
+      },
+      "heat_sources_source_brine_circuit_pressure": {
+        "name": "Heat source brine circuit pressure"
+      },
+      "heat_sources_source_brine_circuit_pump_speed": {
+        "name": "Heat source brine circuit pump speed"
+      },
+      "heat_sources_source_brine_circuit_volume_flow": {
+        "name": "Heat source brine circuit volume flow"
+      },
+      "heat_sources_source_e_heater_status": {
+        "name": "Electric heater status"
+      },
+      "heat_sources_source_emon_ch_consumption": {
+        "name": "Heating energy"
+      },
+      "heat_sources_source_emon_ch_consumption_compressor": {
+        "name": "Heating energy compressor"
+      },
+      "heat_sources_source_emon_ch_consumption_output_produced": {
+        "name": "Heating energy produced"
+      },
+      "heat_sources_source_emon_dhw_consumption": {
+        "name": "Hot water energy"
+      },
+      "heat_sources_source_emon_dhw_consumption_compressor": {
+        "name": "Hot water energy compressor"
+      },
+      "heat_sources_source_emon_dhw_consumption_output_produced": {
+        "name": "Hot water energy produced"
+      },
+      "heat_sources_source_emon_total_consumption": {
+        "name": "Total energy"
+      },
+      "heat_sources_source_emon_total_consumption_compressor": {
+        "name": "Total energy compressor"
+      },
+      "heat_sources_source_emon_total_consumption_output_produced": {
+        "name": "Total energy produced"
+      },
+      "heat_sources_source_heat_pump_type": {
+        "name": "Heat pump type"
+      },
+      "heat_sources_source_number_of_starts": {
+        "name": "Compressor starts"
+      },
+      "heat_sources_source_number_of_starts_ch": {
+        "name": "Compressor starts heating"
+      },
+      "heat_sources_source_number_of_starts_cooling": {
+        "name": "Compressor starts cooling"
+      },
+      "heat_sources_source_number_of_starts_dhw": {
+        "name": "Compressor starts hot water"
+      },
+      "heat_sources_source_number_of_starts_total": {
+        "name": "Compressor starts total"
+      },
+      "heat_sources_source_odu_fan_speed": {
+        "name": "Heat source outdoor unit fan speed"
+      },
+      "heat_sources_source_pump_volume_flow": {
+        "name": "Heat source pump volume flow"
+      },
+      "heat_sources_source_refrigerant_compressor_actual_speed": {
+        "name": "Heat source refrigerant compressor actual speed"
+      },
+      "heat_sources_source_refrigerant_compressor_elec_power_actual": {
+        "name": "Heat source refrigerant compressor electrical power actual"
+      },
+      "heat_sources_source_refrigerant_compressor_temp": {
+        "name": "Heat source refrigerant compressor temperature"
+      },
+      "heat_sources_source_refrigerant_heat_carrier_pump_speed": {
+        "name": "Heat source refrigerant heat carrier pump speed"
+      },
+      "heat_sources_source_refrigerant_high_pressure_temp": {
+        "name": "Heat source refrigerant high pressure temperature"
+      },
+      "heat_sources_source_refrigerant_hot_gas_temp": {
+        "name": "Heat source refrigerant hot gas temperature"
+      },
+      "heat_sources_source_refrigerant_liquid_pipe_cooling_temp": {
+        "name": "Heat source refrigerant liquid pipe cooling temperature"
+      },
+      "heat_sources_source_refrigerant_liquid_pipe_heating_temp": {
+        "name": "Heat source refrigerant liquid pipe heating temperature"
+      },
+      "heat_sources_source_refrigerant_low_pressure_temp": {
+        "name": "Heat source refrigerant low pressure temperature"
+      },
+      "heat_sources_source_refrigerant_status": {
+        "name": "Heat source refrigerant status"
+      },
+      "heat_sources_source_refrigerant_suction_gas_temp": {
+        "name": "Heat source refrigerant suction gas temperature"
+      },
+      "heat_sources_source_return_flow_temp": {
+        "name": "Heat source return flow temperature"
+      },
+      "heat_sources_source_safety_board_status": {
+        "name": "Heat source safety board status"
+      },
+      "heat_sources_source_supply_flow_condenser_temp": {
+        "name": "Heat source supply flow condenser temperature"
+      },
+      "heat_sources_source_working_time": {
+        "name": "Heat source working time"
+      },
+      "heat_sources_source_working_time_ch": {
+        "name": "Heat source working time heating"
+      },
+      "heat_sources_source_working_time_cooling": {
+        "name": "Heat source working time cooling"
+      },
+      "heat_sources_source_working_time_dhw": {
+        "name": "Heat source working time hot water"
+      },
+      "heat_sources_source_working_time_pool": {
+        "name": "Heat source working time pool"
+      },
+      "heat_sources_source_working_time_total": {
+        "name": "Heat source working time total"
+      },
+      "heat_sources_system_pressure": {
+        "name": "System pressure"
+      },
+      "heat_sources_working_time_total_system": {
+        "name": "Heat source working time total system"
+      },
+      "heating_circuits_circuit_actual_humidity": {
+        "name": "Heating circuit actual humidity"
+      },
+      "heating_circuits_circuit_boost_remaining_time": {
+        "name": "Heating circuit boost remaining time"
+      },
+      "heating_circuits_circuit_current_room_setpoint": {
+        "name": "Heating circuit current room setpoint"
+      },
+      "heating_circuits_circuit_current_su_wi_mode": {
+        "name": "Summer/winter mode"
+      },
+      "heating_circuits_circuit_max_flow_temp": {
+        "name": "Heating circuit max flow temperature"
+      },
+      "heating_circuits_circuit_mixer_position": {
+        "name": "Heating circuit mixer position"
+      },
+      "heating_circuits_circuit_overall_status": {
+        "name": "Heating circuit overall status"
+      },
+      "heating_circuits_circuit_pump_status": {
+        "name": "Circulation pump"
+      },
+      "heating_circuits_circuit_roomtemperature": {
+        "name": "Heating circuit room temperature"
+      },
+      "pool_current_temp": {
+        "name": "Pool current temperature"
+      },
+      "solar_circuits_circuit_collector_temperature": {
+        "name": "Solar circuit collector temperature"
+      },
+      "solar_circuits_circuit_dhw_tank_bottom_temperature": {
+        "name": "Solar circuit hot water tank bottom temperature"
+      },
+      "solar_circuits_circuit_pump_modulation": {
+        "name": "Solar circuit pump modulation"
+      },
+      "solar_circuits_circuit_solar_yield": {
+        "name": "Solar circuit solar yield"
+      },
+      "system_bus": {
+        "name": "System bus"
+      },
+      "system_i_src_installation_status": {
+        "name": "Internal source installation status"
+      },
+      "system_i_src_support_status": {
+        "name": "Internal source support status"
+      },
+      "system_power_constraints_affected_domain_additional_heater_ch": {
+        "name": "System power constraints affected domain additional heater heating"
+      },
+      "system_power_constraints_affected_domain_additional_heater_dhw_tank": {
+        "name": "System power constraints affected domain additional heater hot water tank"
+      },
+      "system_power_constraints_affected_domain_additional_heater_primary_circuit": {
+        "name": "System power constraints affected domain additional heater primary circuit"
+      },
+      "system_power_constraints_affected_domain_ch": {
+        "name": "System power constraints affected domain heating"
+      },
+      "system_power_constraints_affected_domain_cooling": {
+        "name": "System power constraints affected domain cooling"
+      },
+      "system_power_constraints_affected_domain_dhw": {
+        "name": "System power constraints affected domain hot water"
+      },
+      "system_power_constraints_affected_domain_pool": {
+        "name": "System power constraints affected domain pool"
+      },
+      "system_power_constraints_affected_domain_refrigerant_circuit": {
+        "name": "System power constraints affected domain refrigerant circuit"
+      },
+      "system_power_constraints_dhw_reduce_temp_on_alarm_status": {
+        "name": "System power constraints hot water reduce temperature on alarm status"
+      },
+      "system_power_constraints_external_inputs_additional_heater_block_status": {
+        "name": "System power constraints external inputs additional heater block status"
+      },
+      "system_power_constraints_external_inputs_appliance_power_block_status": {
+        "name": "System power constraints external inputs appliance power block status"
+      },
+      "system_power_constraints_external_inputs_appliance_power_limit_status": {
+        "name": "System power constraints external inputs appliance power limit status"
+      },
+      "system_power_constraints_external_inputs_cooling_block_status": {
+        "name": "System power constraints external inputs cooling block status"
+      },
+      "system_power_constraints_external_inputs_dhw_block_status": {
+        "name": "System power constraints external inputs hot water block status"
+      },
+      "system_power_constraints_external_inputs_heating_block_status": {
+        "name": "System power constraints external inputs heating block status"
+      },
+      "system_power_constraints_external_inputs_pv_status": {
+        "name": "System power constraints external inputs PV status"
+      },
+      "system_power_constraints_high_source_temp_stop_cooling_status": {
+        "name": "System power constraints high source temperature stop cooling status"
+      },
+      "system_power_constraints_high_source_temp_stop_heating_status": {
+        "name": "System power constraints high source temperature stop heating status"
+      },
+      "system_power_constraints_low_source_temp_stop_cooling_status": {
+        "name": "System power constraints low source temperature stop cooling status"
+      },
+      "system_power_constraints_low_source_temp_stop_heating_status": {
+        "name": "System power constraints low source temperature stop heating status"
+      },
+      "system_power_constraints_maintenance_mode_status": {
+        "name": "System power constraints maintenance mode status"
+      },
+      "system_power_constraints_power_elec_desired_status": {
+        "name": "System power constraints desired electrical power status"
+      },
+      "system_power_constraints_power_elec_limitation_status": {
+        "name": "System power constraints power electrical limitation status"
+      },
+      "system_power_constraints_power_guard_status": {
+        "name": "System power constraints power guard status"
+      },
+      "system_power_constraints_silent_mode_status": {
+        "name": "Silent mode"
+      },
+      "system_power_constraints_user_additional_heater_block_status": {
+        "name": "System power constraints user additional heater block status"
+      },
+      "system_power_guard_active": {
+        "name": "System power guard active"
+      },
+      "system_power_limitation_active": {
+        "name": "Power limitation"
+      },
+      "system_sensors_temperatures_outdoor_t1": {
+        "name": "Outdoor temperature"
+      },
+      "system_type": {
+        "name": "System type"
+      },
+      "system_variable_tariff_ch_current_setpoint": {
+        "name": "System variable tariff heating current setpoint"
+      },
+      "system_variable_tariff_ch_high_price_delta": {
+        "name": "System variable tariff heating high price delta"
+      },
+      "system_variable_tariff_ch_low_price_delta": {
+        "name": "System variable tariff heating low price delta"
+      },
+      "system_variable_tariff_ch_mid_price_setpoint": {
+        "name": "System variable tariff heating mid price setpoint"
+      },
+      "system_variable_tariff_ch_optimization": {
+        "name": "System variable tariff heating optimization"
+      },
+      "system_variable_tariff_ch_status": {
+        "name": "System variable tariff heating status"
+      },
+      "system_variable_tariff_current_price_catagorization": {
+        "name": "System variable tariff current price catagorization"
+      },
+      "system_variable_tariff_dhw_current_opmode": {
+        "name": "System variable tariff hot water current opmode"
+      },
+      "system_variable_tariff_dhw_high_price_enable": {
+        "name": "System variable tariff hot water high price enable"
+      },
+      "system_variable_tariff_dhw_low_price_enable": {
+        "name": "System variable tariff hot water low price enable"
+      },
+      "system_variable_tariff_dhw_optimization": {
+        "name": "System variable tariff hot water optimization"
+      },
+      "system_variable_tariff_dhw_status": {
+        "name": "System variable tariff hot water status"
+      },
+      "system_variable_tariff_tariff_id": {
+        "name": "System variable tariff tariff ID"
+      },
+      "ventilation_zone_appliance_run_time": {
+        "name": "Ventilation appliance run time"
+      },
+      "ventilation_zone_el_aux_heater_power": {
+        "name": "Ventilation electrical auxiliary heater power"
+      },
+      "ventilation_zone_electrical_aux_heater_power": {
+        "name": "Ventilation electrical auxiliary heater power"
+      },
+      "ventilation_zone_exhaust_fan_level": {
+        "name": "Ventilation exhaust fan level"
+      },
+      "ventilation_zone_exhaust_fan_power": {
+        "name": "Ventilation exhaust fan power"
+      },
+      "ventilation_zone_exhaust_fan_speed": {
+        "name": "Ventilation exhaust fan speed"
+      },
+      "ventilation_zone_filter_remaining_time": {
+        "name": "Ventilation filter remaining time"
+      },
+      "ventilation_zone_max_indoor_air_quality": {
+        "name": "Ventilation max indoor air quality"
+      },
+      "ventilation_zone_max_relative_humidity": {
+        "name": "Ventilation max relative humidity"
+      },
+      "ventilation_zone_sensors_exhaust_temp": {
+        "name": "Ventilation sensors exhaust temperature"
+      },
+      "ventilation_zone_sensors_external_air_quality": {
+        "name": "Ventilation sensors external air quality"
+      },
+      "ventilation_zone_sensors_external_humidity": {
+        "name": "Ventilation sensors external humidity"
+      },
+      "ventilation_zone_sensors_extract_temp": {
+        "name": "Ventilation sensors extract temperature"
+      },
+      "ventilation_zone_sensors_internal_air_quality": {
+        "name": "Ventilation sensors internal air quality"
+      },
+      "ventilation_zone_sensors_internal_humidity": {
+        "name": "Ventilation sensors internal humidity"
+      },
+      "ventilation_zone_sensors_outdoor_temp": {
+        "name": "Ventilation sensors outdoor temperature"
+      },
+      "ventilation_zone_sensors_supply_fan_rotation": {
+        "name": "Ventilation sensors supply fan rotation"
+      },
+      "ventilation_zone_sensors_supply_temp": {
+        "name": "Ventilation sensors supply temperature"
+      },
+      "ventilation_zone_summer_bypass_flap_power": {
+        "name": "Ventilation summer bypass flap power"
+      },
+      "ventilation_zone_supply_fan_power": {
+        "name": "Ventilation supply fan power"
+      },
+      "zones_zone_average_actual_humidity": {
+        "name": "Zone average actual humidity"
+      },
+      "zones_zone_average_current_temperature": {
+        "name": "Zone average current temperature"
+      },
+      "zones_zone_child_lock": {
+        "name": "Zone child lock"
+      },
+      "zones_zone_cooling_operation_mode": {
+        "name": "Zone cooling operation mode"
+      },
+      "zones_zone_heating_operation_mode": {
+        "name": "Zone heating operation mode"
+      },
+      "zones_zone_icon": {
+        "name": "Zone icon"
+      },
+      "zones_zone_name": {
+        "name": "Zone name"
+      }
+    }
+  }
+}

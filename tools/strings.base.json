@@ -1,0 +1,70 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Connect to your K 40 RF",
+        "description": "Enter the address of the gateway. It is the Connect-Key module in your heating system, and it must be reachable on your local network.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "The gateway's IP address or hostname."
+        }
+      },
+      "discovery_confirm": {
+        "title": "K 40 RF found",
+        "description": "A gateway with the device ID {device_id} was found at {host}. Set it up now?"
+      },
+      "credentials": {
+        "title": "Device credentials",
+        "description": "Both values are printed on the sticker on your Connect-Key module.",
+        "data": {
+          "username": "Login",
+          "password": "Password"
+        },
+        "data_description": {
+          "username": "The login from the sticker. It is the same number as in the device name.",
+          "password": "The sticker password, in the form aaaa-bbbb-cccc-dddd. The dashes are optional."
+        }
+      },
+      "proximity": {
+        "title": "Press the buttons on the gateway",
+        "description": "Press the WLAN and radio buttons on the gateway at {host} together for about a second, until the blue LED lights up. Then continue within five minutes.\n\nThe gateway only hands out a token to a device on its own network. If Home Assistant is somewhere else, obtain the token separately and paste it below.",
+        "data": {
+          "token": "Existing token (optional)"
+        },
+        "data_description": {
+          "token": "Leave empty unless Home Assistant runs outside the gateway's network."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect to the gateway",
+        "description": "The gateway at {host} no longer accepts the stored token. Enter the sticker password again to obtain a new one.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "proximity_required": "The gateway refused: press the WLAN and radio buttons together for about a second, then try again straight away. This also fails if Home Assistant is not on the same network as the gateway.",
+      "invalid_auth": "The gateway rejected these credentials. Check the login and password on the sticker.",
+      "invalid_password_format": "The password should look like aaaa-bbbb-cccc-dddd.",
+      "cannot_connect": "Cannot reach the gateway. Check the address and that it is switched on.",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "already_configured": "This gateway is already set up.",
+      "not_a_gateway": "The discovered device is not a K 40 RF gateway.",
+      "reauth_successful": "Reconnected to the gateway."
+    }
+  },
+  "exceptions": {
+    "auth_failed": {
+      "message": "The gateway no longer accepts the stored token."
+    },
+    "cannot_connect": {
+      "message": "Cannot reach the gateway: {error}"
+    }
+  }
+}

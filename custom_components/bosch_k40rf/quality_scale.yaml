@@ -1,0 +1,90 @@
+rules:
+  # Bronze
+  action-setup:
+    status: exempt
+    comment: The device API is read-only, so the integration provides no actions.
+  appropriate-polling: done
+  brands: todo
+  common-modules: done
+  config-flow-test-coverage: done
+  config-flow: done
+  dependency-transparency: todo
+  docs-actions:
+    status: exempt
+    comment: No actions are provided.
+  docs-high-level-description: done
+  docs-installation-instructions: done
+  docs-removal-instructions: done
+  docs-conditions:
+    status: exempt
+    comment: No conditions are provided.
+  docs-triggers:
+    status: exempt
+    comment: No triggers are provided.
+  entity-event-setup:
+    status: exempt
+    comment: Entities poll through a coordinator and subscribe to no events.
+  entity-unique-id: done
+  has-entity-name: done
+  runtime-data: done
+  test-before-configure: done
+  test-before-setup: done
+  unique-config-entry: done
+
+  # Silver
+  action-exceptions:
+    status: exempt
+    comment: No actions are provided.
+  config-entry-unloading: done
+  docs-configuration-parameters:
+    status: exempt
+    comment: No options flow is provided.
+  docs-installation-parameters: done
+  entity-unavailable: done
+  integration-owner: done
+  log-when-unavailable: done
+  parallel-updates: done
+  reauthentication-flow: done
+  test-coverage: done
+
+  # Gold
+  devices: done
+  diagnostics: done
+  discovery: done
+  discovery-update-info: done
+  docs-data-update: done
+  docs-examples: done
+  docs-known-limitations: done
+  docs-supported-devices: done
+  docs-supported-functions: done
+  docs-troubleshooting: done
+  docs-use-cases: done
+  dynamic-devices:
+    status: todo
+    comment: >-
+      Circuits are probed once per setup. A circuit added to the heating system
+      later is picked up on the next reload, not while running.
+  entity-category: done
+  entity-device-class: done
+  entity-disabled-by-default: done
+  entity-translations:
+    status: todo
+    comment: >-
+      Catalogue resources and their counter components are translated. The
+      dynamic /signals branch is device specific and cannot be translated ahead
+      of time; those entities fall back to their signal name and are disabled by
+      default.
+  exception-translations: done
+  icon-translations: todo
+  reconfiguration-flow: todo
+  repair-issues:
+    status: exempt
+    comment: Nothing the user can repair is detectable beyond reauthentication.
+  stale-devices:
+    status: exempt
+    comment: One config entry is one gateway; there are no sub-devices to remove.
+
+  # Platinum
+  async-dependency: done
+  inject-websession: done
+  strict-typing: done
