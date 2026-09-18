@@ -193,7 +193,11 @@ imported into long-term statistics.
 
 204 resources are declared and **101 have ever answered on real hardware** —
 all of it the same installation. The rest is written against the spec, and the
-spec has been wrong twice already.
+spec is not a safe assumption: of the 100 paths that could be compared against
+a live device, **21 disagreed with it** — a unit written `rpm"`, a JSON boolean
+inside a `stringValue`, an enum differing in case, sensor-fault sentinels that
+appear in no example. The enumerations and units live only in the spec's
+examples, which nothing validates, and they have drifted from the firmware.
 
 | Appliance | System | Circuits | Firmware | Confirmed |
 |---|---|---|---|---|
