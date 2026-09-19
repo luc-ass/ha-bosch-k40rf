@@ -1,4 +1,4 @@
-# Bosch K 40 RF for Home Assistant
+# Bosch K 40 RF / Buderus MX 400 for Home Assistant
 
 Reads a Bosch Connect-Key **K 40 RF** heating gateway over its local API — the
 one the gateway serves on your own network, with a token it hands out itself.
