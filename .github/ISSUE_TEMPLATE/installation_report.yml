@@ -61,6 +61,9 @@ body:
     id: diagnostics
     attributes:
       label: Diagnostics
-      description: Attach the file here (drag and drop).
+      description: >-
+        Drag and drop the file here. GitHub is picky about .json uploads and
+        may refuse it; if it does, just paste the contents into this box
+        instead -- that works just as well. Do not spend long fighting it.
     validations:
       required: true
