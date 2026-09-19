@@ -719,6 +719,7 @@ CATALOG: tuple[ResourceSpec, ...] = (
         placeholder="heatSourceId",
         unit="%",
         description="Get the fan speed of the outdoor unit.",
+        live_confirmed=True,
     ),
     ResourceSpec(
         path="/heatSources/{heatSourceId}/pumpVolumeFlow",
@@ -918,8 +919,9 @@ CATALOG: tuple[ResourceSpec, ...] = (
         path="/heatingCircuits/{heatingCircuitId}/pumpStatus",
         value_type="stringValue",
         placeholder="heatingCircuitId",
-        options=("on", "off"),
+        options=("off", "on"),
         description="Get the heating circuit pump status.",
+        live_confirmed=True,
     ),
     ResourceSpec(
         path="/heatingCircuits/{heatingCircuitId}/roomtemperature",

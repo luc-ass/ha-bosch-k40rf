@@ -2,7 +2,8 @@
 
 Reads a Bosch Connect-Key **K 40 RF** heating gateway over its local API — the
 one the gateway serves on your own network, with a token it hands out itself.
-Buderus-branded systems use the same module and work the same way.
+Buderus-branded systems use the same module, work the same way, and are named
+as the Buderus hardware they are.
 
 Everything is read-only. That is the device's decision, not this integration's:
 every field it exposes is marked non-writable.
@@ -13,10 +14,11 @@ API at all.
 > [!WARNING]
 > **Beta — version 0.1.8.**
 >
-> One heating system has ever run this: an air-to-water heat pump with one
-> heating circuit, hot water and mechanical ventilation. Everything else —
-> cascades, solar, pools, gas and oil boilers, several circuits, radio zones —
-> follows Bosch's published spec and has never met hardware.
+> Two heating systems have ever run this, both air-to-water heat pumps with a
+> single heating circuit: the development system, which also has hot water and
+> mechanical ventilation, and a Buderus Logatherm with neither. Everything
+> else — cascades, solar, pools, gas and oil boilers, several circuits, radio
+> zones — follows Bosch's published spec and has never met hardware.
 >
 > Expect rough edges, and expect entity **names** to keep changing while the
 > shape of things settles. Entity and device **identities** have been stable
@@ -52,9 +54,11 @@ API at all.
   heater, ventilation), so the energy dashboard works and a performance factor
   is one template division. Start counts and working times arrive in the same
   shape and keep their own units instead of being mislabelled as energy.
-- **87 diagnostic signals** from the controller itself — compressor speed,
-  valve positions, frost protection, bus status. Disabled by default; switch on
-  the ones you want.
+- **Diagnostic signals from the controller itself** — compressor speed, valve
+  positions, frost protection, bus status. How many there are is the
+  appliance's decision, not ours: of the two systems tested, one serves 87 and
+  the other 99, with 68 in common. Disabled by default; switch on the ones you
+  want.
 - **Faults read as "unknown", not as −3276.8 °C.** The gateway reports a broken
   sensor as a sentinel value; those are recognised instead of charted.
 
@@ -169,6 +173,11 @@ numbered heat sources and no guessed models.
 Readings that describe the plant rather than one circuit — outdoor temperature,
 system pressure, the energy balance of a cascade — stay on the gateway.
 
+The gateway is named after the brand it reports. `/gateway/brand` answers Bosch
+on one installation and Buderus on the next, and the module names itself K40RF
+or MX400 to match, so a Buderus system gets an **MX 400** with Buderus as the
+manufacturer on every device under it.
+
 ### What things are called
 
 The device says what the entity then does not: on "Heating circuit" the room
@@ -191,8 +200,8 @@ imported into long-term statistics.
 
 ## Tested installations
 
-204 resources are declared and **101 have ever answered on real hardware** —
-all of it the same installation. The rest is written against the spec, and the
+204 resources are declared and **103 have ever answered on real hardware**,
+across two installations. The rest is written against the spec, and the
 spec is not a safe assumption: of the 100 paths that could be compared against
 a live device, **21 disagreed with it** — a unit written `rpm"`, a JSON boolean
 inside a `stringValue`, an enum differing in case, sensor-fault sentinels that
@@ -202,11 +211,18 @@ examples, which nothing validates, and they have drifted from the firmware.
 | Appliance | System | Circuits | Firmware | Confirmed |
 |---|---|---|---|---|
 | Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
+| Buderus Logatherm WLW186i-12 TP70 + WLW MB-5 AR | `heatpump_single`, EMS 2.0 | hs1, hc1 | 15.00.01 | 65 resources, 99 signals |
+
+The second one ([#2](https://github.com/luc-ass/ha-bosch-k40rf/issues/2)) shows
+what such a file is worth. It added two resources nobody had ever seen answer,
+which is the small half. The other half: 31 controller signals that do not
+exist on the first machine, the fact that every field is non-writable on a
+gateway that is not ours, and a bug in how two heating-circuit setpoints were
+read — which would have gone unnoticed until the first cold day.
 
 **If your system is not in this table, its diagnostics file is the most useful
 thing you can send** — particularly a cascade, solar, a pool, a gas or oil
-boiler, several heating circuits, zones with radio thermostats, or a
-Buderus-branded system.
+boiler, several heating circuits, or zones with radio thermostats.
 
 **Settings → Devices & services → Bosch K 40 RF → ⋯ → Download diagnostics**,
 then either open an [installation
@@ -235,8 +251,8 @@ usually a commit the same day, and your system joins the table.
   [`pyk40rf`](https://github.com/luc-ass/pyk40rf) and every entity is derived
   from the spec, so writable entities would be an addition rather than a
   rewrite.
-- **One installation tested.** See [Tested
-  installations](#tested-installations).
+- **Two installations tested**, both single-circuit air-to-water heat pumps.
+  See [Tested installations](#tested-installations).
 - **Discovery is unreliable.** The announcement has been seen, but only after
   the gateway had been contacted once over its API. Cause unknown; manual setup
   always works.
