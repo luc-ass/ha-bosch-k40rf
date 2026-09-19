@@ -49,7 +49,10 @@ def main(argv: list[str]) -> int:
         print(__doc__)
         return 2
 
-    data = json.loads(Path(argv[1]).read_text())
+    payload = json.loads(Path(argv[1]).read_text())
+    # What Home Assistant hands the user wraps the integration's own dump in
+    # its report; a dump pulled out of one by hand is the dump itself.
+    data = payload.get("data", payload)
     declared, by_concrete = _catalogue()
 
     print(_heading("Installation"))
@@ -139,20 +142,33 @@ def _signals(data: dict[str, Any]) -> None:
 
     prefixes: dict[str, int] = {}
     enums: list[str] = []
+    coded: list[str] = []
     for path, resource in sorted(resources.items()):
         signal_id = path.rsplit("/", 1)[-1]
         prefixes[signal_id.split(".")[0]] = prefixes.get(signal_id.split(".")[0], 0) + 1
-        if isinstance(resource.get("state"), dict):
-            enums.append(f"{signal_id} = {sorted(resource['state'])}")
+        if not isinstance(resource.get("state"), dict):
+            continue
+        line = f"{signal_id} = {sorted(resource['state'])}"
+        # A label map on a resource that carries a unit names the codes the
+        # reading takes instead of a value. That is not an enumeration, and
+        # reading it as one loses every real measurement.
+        (coded if resource.get("unitOfMeasure") else enums).append(line)
 
     for prefix, count in sorted(prefixes.items(), key=lambda item: -item[1]):
         print(f"    {prefix:14} {count}")
-    if enums:
-        print(f"  {len(enums)} carry an enumeration:")
-        for line in enums[:10]:
-            print(f"    {line}")
-        if len(enums) > 10:
-            print(f"    ... and {len(enums) - 10} more")
+    _listing(enums, "carry an enumeration")
+    _listing(coded, "are measurements whose map names codes, not states")
+
+
+def _listing(lines: list[str], what: str) -> None:
+    """Print at most ten of a group of signals, and say how many there were."""
+    if not lines:
+        return
+    print(f"  {len(lines)} {what}:")
+    for line in lines[:10]:
+        print(f"    {line}")
+    if len(lines) > 10:
+        print(f"    ... and {len(lines) - 10} more")
 
 
 def _heading(text: str) -> str:
