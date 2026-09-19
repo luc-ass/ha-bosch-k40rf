@@ -100,6 +100,9 @@ def readings_fixture() -> dict[str, object]:
         "/gateway/versionFirmware": resource(
             {"id": "/gateway/versionFirmware", "type": "stringValue", "value": "15.00.01"}
         ),
+        "/gateway/brand": resource(
+            {"id": "/gateway/brand", "type": "stringValue", "value": "Bosch"}
+        ),
     }
 
 

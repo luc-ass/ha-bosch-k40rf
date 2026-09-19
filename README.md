@@ -11,7 +11,7 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.7.**
+> **Beta — version 0.1.8.**
 >
 > One heating system has ever run this: an air-to-water heat pump with one
 > heating circuit, hot water and mechanical ventilation. Everything else —
@@ -256,7 +256,7 @@ four places:
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
-| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.3` | `pyk40rf==0.1.x`, from PyPI |
+| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.4` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
 `pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.

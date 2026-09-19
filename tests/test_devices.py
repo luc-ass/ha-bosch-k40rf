@@ -42,6 +42,71 @@ def test_the_gateway_is_the_hub(system_info: SystemInfo, installation: Installat
     assert "via_device_id" not in hub
 
 
+#: What /system/basicInfo lists on a Buderus installation: the same gateway,
+#: reporting itself as MX400 rather than K40RF. From the diagnostics of a
+#: Logatherm WLW186i-12 TP70 (issue #2).
+BUDERUS_SYSTEM_INFO = SystemInfo(
+    gateway_id=DEVICE_ID,
+    modules=(
+        SystemInfoModule(
+            name="Logatherm WLW186i-12 TP70",
+            hardware_id="XCU_THH",
+            version="12.11.1-2fc97779",
+            serial_number="4" * 23,
+        ),
+        SystemInfoModule(
+            name=None,
+            hardware_id="HMI_module_02_800-20_GSBS_BU_111x",
+            version="47.12-FIELD",
+            serial_number=None,
+        ),
+        SystemInfoModule(
+            name=None, hardware_id="MX400", version="15.00.01", serial_number="5" * 23
+        ),
+        SystemInfoModule(
+            name="Logatherm WLW MB-5 AR",
+            hardware_id="XCU_SRH",
+            version="9.16.0-dab9f463",
+            serial_number="6" * 23,
+        ),
+    ),
+)
+
+
+class TestBrand:
+    """One gateway, several brands: what /gateway/brand says decides."""
+
+    def test_the_reported_brand_is_the_manufacturer(self, system_info: SystemInfo) -> None:
+        hub = build_hub(DEVICE_ID, system_info, brand="Bosch")
+        assert hub["manufacturer"] == "Bosch"
+
+    def test_a_buderus_gateway_is_not_called_a_bosch(self) -> None:
+        hub = build_hub(DEVICE_ID, BUDERUS_SYSTEM_INFO, brand="Buderus")
+        assert hub["manufacturer"] == "Buderus"
+        assert hub["model"] == "MX 400"
+        assert hub["name"] == "MX 400"
+        assert hub["model_id"] == "MX400"
+
+    def test_the_gateway_module_is_found_under_either_name(self) -> None:
+        """The module carries the firmware, and its id differs per brand."""
+        hub = build_hub(DEVICE_ID, BUDERUS_SYSTEM_INFO, brand="Buderus")
+        assert hub["sw_version"] == "15.00.01"
+
+    def test_the_branches_carry_the_brand_too(self, installation: Installation) -> None:
+        hub = build_hub(DEVICE_ID, BUDERUS_SYSTEM_INFO, brand="Buderus")
+        devices = build_device_tree(
+            DEVICE_ID, BUDERUS_SYSTEM_INFO, installation, hub, HUB_DEVICE_ID
+        )
+        device = devices.for_resource("/heatingCircuits/hc1/maxFlowTemp", "hc1")
+        assert device["manufacturer"] == "Buderus"
+
+    def test_an_unreported_brand_falls_back(self, system_info: SystemInfo) -> None:
+        """A gateway that answers no brand is still overwhelmingly a Bosch."""
+        hub = build_hub(DEVICE_ID, system_info)
+        assert hub["manufacturer"] == "Bosch"
+        assert hub["model"] == "K 40 RF"
+
+
 def test_the_appliance_names_its_heat_source(
     system_info: SystemInfo, installation: Installation
 ) -> None:

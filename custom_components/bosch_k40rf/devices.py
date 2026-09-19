@@ -27,19 +27,23 @@ from pyk40rf import Installation, Resource, StringResource, SystemInfo, SystemIn
 
 from homeassistant.helpers.device_registry import DeviceInfo
 
-from .const import DOMAIN, MANUFACTURER
+from .const import DEFAULT_MANUFACTURER, DOMAIN
 from .resources import ResourceCandidate
 
-#: How the gateway names itself among the modules of /system/basicInfo.
-_GATEWAY_HARDWARE_ID = "K40RF"
+#: How the gateway names itself among the modules of /system/basicInfo, and
+#: the name it is sold under. One module, two brands: a Buderus installation
+#: has never heard of a "K 40 RF", and its modules say MX400 instead.
+_GATEWAY_HARDWARE_IDS = {"K40RF": "K 40 RF", "MX400": "MX 400"}
 
-#: Shown as the hub's model. The module entry only carries the internal id.
+#: Shown as the hub's model where the modules name no gateway at all.
 _GATEWAY_MODEL = "K 40 RF"
 
 #: Ventilation modules identify themselves as MV<number>.
 _VENTILATION_HARDWARE_PREFIX = "MV"
 
 _FIRMWARE_PATH = "/gateway/versionFirmware"
+
+_BRAND_PATH = "/gateway/brand"
 
 
 @dataclass(frozen=True, slots=True)
@@ -171,14 +175,26 @@ class DeviceTree:
         return self.hub, tuple([label, *kept] if label else kept)
 
 
-def build_hub(gateway_id: str, system_info: SystemInfo, firmware: str | None = None) -> DeviceInfo:
-    """Describe the gateway itself, the device every other one hangs off."""
-    gateway_module = _module_by_hardware_id(system_info, _GATEWAY_HARDWARE_ID)
+def build_hub(
+    gateway_id: str,
+    system_info: SystemInfo,
+    firmware: str | None = None,
+    brand: str | None = None,
+) -> DeviceInfo:
+    """Describe the gateway itself, the device every other one hangs off.
+
+    The gateway is one product under several brands, and it says which one it
+    was sold as: ``/gateway/brand`` answers "Bosch" on one house and "Buderus"
+    on the next. Naming every installation after the Bosch box would be wrong
+    on the owner's own wall, so the reported brand decides.
+    """
+    gateway_module = _gateway_module(system_info)
     return DeviceInfo(
         identifiers={(DOMAIN, gateway_id)},
-        manufacturer=MANUFACTURER,
-        model=_GATEWAY_MODEL,
-        name=_GATEWAY_MODEL,
+        manufacturer=brand or DEFAULT_MANUFACTURER,
+        model=_gateway_model(gateway_module),
+        model_id=gateway_module.hardware_id if gateway_module else None,
+        name=_gateway_model(gateway_module),
         serial_number=gateway_id,
         sw_version=firmware or (gateway_module.version if gateway_module else None),
     )
@@ -196,6 +212,7 @@ def build_device_tree(
     ``hub_device_id`` is the registry id of the already-registered gateway:
     a child device names its parent by id, so the parent has to exist first.
     """
+    manufacturer = hub.get("manufacturer") or DEFAULT_MANUFACTURER
     heat_sources = tuple(installation.heat_sources)
     # A product name can only be pinned on a heat source if there is one.
     appliance = _appliance_module(system_info) if len(heat_sources) == 1 else None
@@ -207,7 +224,14 @@ def build_device_tree(
         module = {"heatSources": appliance, "ventilation": ventilation}.get(branch)
         for circuit_id in ids:
             branches[(branch, circuit_id)] = _subdevice(
-                gateway_id, branch, circuit_id, family, len(ids), module, hub_device_id
+                gateway_id,
+                branch,
+                circuit_id,
+                family,
+                len(ids),
+                module,
+                hub_device_id,
+                manufacturer,
             )
 
     return DeviceTree(
@@ -223,6 +247,12 @@ def firmware_version(readings: Mapping[str, Resource]) -> str | None:
     return resource.value if isinstance(resource, StringResource) else None
 
 
+def brand(readings: Mapping[str, Resource]) -> str | None:
+    """Return the brand the gateway was sold under, if it reported one."""
+    resource = readings.get(_BRAND_PATH)
+    return resource.value if isinstance(resource, StringResource) else None
+
+
 def _subdevice(
     gateway_id: str,
     branch: str,
@@ -231,11 +261,12 @@ def _subdevice(
     count: int,
     module: SystemInfoModule | None,
     hub_device_id: str,
+    manufacturer: str,
 ) -> DeviceInfo:
     """Describe one circuit, zone or heat source as a device under the hub."""
     device = DeviceInfo(
         identifiers={(DOMAIN, f"{gateway_id}_{branch.lower()}_{circuit_id}")},
-        manufacturer=MANUFACTURER,
+        manufacturer=manufacturer,
         # ModuleHwIdentStr is a module id (MV200, XCU_THH), not a product name:
         # the unit it sits in is sold as a Vent 5000 C. Only a ProductName may
         # be shown as the model; the rest is what it is, a model id.
@@ -273,9 +304,16 @@ def _ordinal(circuit_id: str) -> str:
     return digits or circuit_id
 
 
-def _module_by_hardware_id(system_info: SystemInfo, hardware_id: str) -> SystemInfoModule | None:
-    """Return the module reporting exactly this hardware identifier."""
-    return next((m for m in system_info.modules if m.hardware_id == hardware_id), None)
+def _gateway_module(system_info: SystemInfo) -> SystemInfoModule | None:
+    """Return the module the gateway reports for itself, whatever it calls it."""
+    return next((m for m in system_info.modules if m.hardware_id in _GATEWAY_HARDWARE_IDS), None)
+
+
+def _gateway_model(module: SystemInfoModule | None) -> str:
+    """Return the name this gateway is sold under."""
+    if module is None:
+        return _GATEWAY_MODEL
+    return _GATEWAY_HARDWARE_IDS.get(module.hardware_id or "", _GATEWAY_MODEL)
 
 
 def _appliance_module(system_info: SystemInfo) -> SystemInfoModule | None:

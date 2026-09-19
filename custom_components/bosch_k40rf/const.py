@@ -7,7 +7,9 @@ from typing import Final
 
 DOMAIN: Final = "bosch_k40rf"
 
-MANUFACTURER: Final = "Bosch"
+#: Used only where the gateway does not report ``/gateway/brand`` itself.
+#: The same hardware is sold as Bosch, Buderus and a handful of other brands.
+DEFAULT_MANUFACTURER: Final = "Bosch"
 
 CONF_TOKEN: Final = "token"
 CONF_DEVICE_ID: Final = "device_id"

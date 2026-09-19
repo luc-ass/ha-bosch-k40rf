@@ -14,7 +14,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_AUTH_PORT, DOMAIN, MAX_CONCURRENT_REQUESTS
 from .coordinator import K40DataCoordinator, K40SignalCoordinator
-from .devices import DeviceTree, build_device_tree, build_hub, firmware_version
+from .devices import DeviceTree, brand, build_device_tree, build_hub, firmware_version
 from .types import K40ConfigEntry, K40RuntimeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -68,7 +68,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
     gateway_id = system_info.gateway_id or entry.unique_id or entry.entry_id
     # Built once here rather than per platform, so every entity of one device
     # reports the same firmware and model -- the registry keeps the last write.
-    hub = build_hub(gateway_id, system_info, firmware_version(coordinator.data or {}))
+    readings = coordinator.data or {}
+    hub = build_hub(gateway_id, system_info, firmware_version(readings), brand(readings))
     # A circuit names its gateway by registry id, so the gateway has to be
     # registered before the platforms describe anything that hangs off it.
     hub_entry = dr.async_get(hass).async_get_or_create(config_entry_id=entry.entry_id, **hub)
