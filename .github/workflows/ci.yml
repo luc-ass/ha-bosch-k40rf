@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch makes the first run pointless.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, types, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # The interpreter is not a choice: Home Assistant 2026.9 needs 3.14.
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.14"
+          enable-cache: true
+
+      - name: Install
+        run: uv sync --group dev
+
+      - name: Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy custom_components
+
+      # Bronze asks for full config-flow coverage; the floor is well under
+      # where the suite actually sits, so it catches a collapse, not a rounding.
+      - name: Tests
+        run: >
+          uv run pytest
+          --cov=custom_components/bosch_k40rf
+          --cov-report=term-missing
+          --cov-fail-under=95
+
+      # strings.json and translations/en.json are written by the generator from
+      # the catalogue and strings.base.json. Only the generated files ship, so
+      # an edit to one of them alone would go out and then be overwritten.
+      - name: The generated strings are current
+        run: |
+          uv run python tools/generate_strings.py
+          git diff --exit-code custom_components/bosch_k40rf/strings.json custom_components/bosch_k40rf/translations/en.json
