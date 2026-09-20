@@ -16,6 +16,7 @@ from pyk40rf import (
     K40ConnectionError,
     K40Error,
     K40ProximityError,
+    SystemInfo,
     device_id_from_zeroconf_name,
     is_valid_password,
 )
@@ -36,10 +37,12 @@ STEP_USER_SCHEMA = vol.Schema({vol.Required(CONF_HOST): str})
 class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Walk the user through pairing one gateway.
 
-    Pairing needs a button press on the device *and* a request from its own
-    subnet. Home Assistant usually sits in that subnet, so the flow can fetch
-    the token itself; where it does not, the user can paste a token obtained
-    elsewhere.
+    There are two ways in, and the user picks between them up front. Pairing
+    fetches a token from the gateway, which needs the sticker password, a
+    button press on the device *and* a request from its own subnet. Pasting a
+    token skips all three: it is the only credential the integration stores,
+    so a user who runs Home Assistant elsewhere, rotates tokens themselves, or
+    simply will not type the sticker password never has to.
     """
 
     VERSION = 1
@@ -62,7 +65,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
         """
         if user_input is not None:
             self._host = user_input[CONF_HOST].strip()
-            return await self.async_step_credentials()
+            return await self.async_step_auth_method()
 
         return self.async_show_form(step_id="user", data_schema=STEP_USER_SCHEMA)
 
@@ -105,11 +108,27 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Let the user confirm the discovered gateway before pairing it."""
         if user_input is not None:
-            return await self.async_step_credentials()
+            return await self.async_step_auth_method()
 
         return self.async_show_form(
             step_id="discovery_confirm",
             description_placeholders={"host": self._host or "", "device_id": self._device_id or ""},
+        )
+
+    async def async_step_auth_method(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask how the gateway should be authenticated.
+
+        Both branches end in the same entry; they differ only in who obtains
+        the token. Reauth offers the same choice, so a token the user manages
+        themselves can be replaced by another one.
+        """
+        pair_step = "reauth_confirm" if self.source == "reauth" else "credentials"
+        return self.async_show_menu(
+            step_id="auth_method",
+            menu_options=[pair_step, "token"],
+            description_placeholders={"host": self._host or ""},
         )
 
     async def async_step_credentials(
@@ -151,10 +170,6 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            manual_token = str(user_input.get(CONF_TOKEN) or "").strip()
-            if manual_token:
-                return self._create_entry(manual_token)
-
             try:
                 token = await self._async_fetch_token()
             except K40ProximityError:
@@ -169,10 +184,53 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 return self._create_entry(token)
 
-        schema = vol.Schema({vol.Optional(CONF_TOKEN): str})
         return self.async_show_form(
             step_id="proximity",
-            data_schema=schema,
+            data_schema=vol.Schema({}),
+            errors=errors,
+            description_placeholders={"host": self._host or ""},
+        )
+
+    async def async_step_token(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Take a token the user obtained elsewhere.
+
+        Reading ``/system/basicInfo`` does double duty: it proves the token is
+        accepted -- nothing else in this branch talks to the gateway -- and it
+        names the gateway the token belongs to, which is the entry's unique id.
+        """
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            token = user_input[CONF_TOKEN].strip()
+
+            try:
+                system_info = await self._async_read_system_info(token)
+            except K40AuthError:
+                errors["base"] = "invalid_token"
+            except K40ConnectionError:
+                errors["base"] = "cannot_connect"
+            except K40Error:
+                _LOGGER.exception("Unexpected error while checking a token")
+                errors["base"] = "unknown"
+            else:
+                # The gateway's own id outranks a discovered one: it names the
+                # device this token actually opens, which is what reauth has
+                # to compare against.
+                device_id = system_info.gateway_id or self._username
+                if device_id is None:
+                    errors["base"] = "no_gateway_id"
+                else:
+                    self._username = device_id
+                    await self.async_set_unique_id(device_id)
+                    if self.source == "reauth":
+                        self._abort_if_unique_id_mismatch()
+                    else:
+                        self._abort_if_unique_id_configured()
+                    return self._create_entry(token)
+
+        return self.async_show_form(
+            step_id="token",
+            data_schema=vol.Schema({vol.Required(CONF_TOKEN): str}),
             errors=errors,
             description_placeholders={"host": self._host or ""},
         )
@@ -183,7 +241,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
         self._username = entry_data.get(CONF_USERNAME)
         self._port = entry_data.get(CONF_PORT, DATA_PORT)
         self._auth_port = entry_data.get(CONF_AUTH_PORT, AUTH_PORT)
-        return await self.async_step_reauth_confirm()
+        return await self.async_step_auth_method()
 
     async def async_step_reauth_confirm(
         self, user_input: dict[str, Any] | None = None
@@ -218,6 +276,17 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
             str(self._username), str(self._password), store=False
         )
         return token.access_token
+
+    async def _async_read_system_info(self, token: str) -> SystemInfo:
+        """Read the gateway's own description with a token, to check both."""
+        client = K40Client(
+            str(self._host),
+            async_get_clientsession(self.hass, verify_ssl=False),
+            token=token,
+            data_port=self._port,
+            auth_port=self._auth_port,
+        )
+        return await client.async_get_system_info()
 
     def _create_entry(self, token: str) -> ConfigFlowResult:
         """Store the paired gateway, or update an existing entry on reauth."""

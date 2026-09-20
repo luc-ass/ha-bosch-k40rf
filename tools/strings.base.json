@@ -16,6 +16,15 @@
         "title": "K 40 RF found",
         "description": "A gateway with the device ID {device_id} was found at {host}. Set it up now?"
       },
+      "auth_method": {
+        "title": "How should Home Assistant connect?",
+        "description": "Pairing asks the gateway at {host} for a token. That needs the password from the sticker, a button press on the device, and Home Assistant on the gateway's own network.\n\nIf you already have a token, or would rather not hand over the sticker password, paste the token instead. It is the only credential the integration stores.",
+        "menu_options": {
+          "credentials": "Pair with the device password",
+          "reauth_confirm": "Pair again with the device password",
+          "token": "Enter an existing token"
+        }
+      },
       "credentials": {
         "title": "Device credentials",
         "description": "Both values are printed on the sticker on your Connect-Key module.",
@@ -30,12 +39,16 @@
       },
       "proximity": {
         "title": "Press the buttons on the gateway",
-        "description": "Press the WLAN and radio buttons on the gateway at {host} together for about a second, until the blue LED lights up. Then continue within five minutes.\n\nThe gateway only hands out a token to a device on its own network. If Home Assistant is somewhere else, obtain the token separately and paste it below.",
+        "description": "Press the WLAN and radio buttons on the gateway at {host} together for about a second, until the blue LED lights up. Then continue within five minutes.\n\nThe gateway only hands out a token to a device on its own network."
+      },
+      "token": {
+        "title": "Existing token",
+        "description": "Paste a bearer token for the gateway at {host}. The token does not expire, several can be valid at once, and the integration stores nothing besides it. The README shows how to obtain one.",
         "data": {
-          "token": "Existing token (optional)"
+          "token": "Token"
         },
         "data_description": {
-          "token": "Leave empty unless Home Assistant runs outside the gateway's network."
+          "token": "The access_token from the gateway's /auth/token answer."
         }
       },
       "reauth_confirm": {
@@ -51,12 +64,15 @@
       "invalid_auth": "The gateway rejected these credentials. Check the login and password on the sticker.",
       "invalid_password_format": "The password should look like aaaa-bbbb-cccc-dddd.",
       "cannot_connect": "Cannot reach the gateway. Check the address and that it is switched on.",
-      "unknown": "Unexpected error"
+      "unknown": "Unexpected error",
+      "invalid_token": "The gateway did not accept this token.",
+      "no_gateway_id": "The gateway did not report its ID, so this token cannot be tied to a device. Pair with the device password instead."
     },
     "abort": {
       "already_configured": "This gateway is already set up.",
       "not_a_gateway": "The discovered device is not a K 40 RF gateway.",
-      "reauth_successful": "Reconnected to the gateway."
+      "reauth_successful": "Reconnected to the gateway.",
+      "unique_id_mismatch": "This token belongs to a different gateway than the one being reconnected."
     }
   },
   "device": {

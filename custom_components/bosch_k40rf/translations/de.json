@@ -16,6 +16,15 @@
         "title": "K 40 RF gefunden",
         "description": "Unter {host} wurde ein Gateway mit der Geräte-ID {device_id} gefunden. Jetzt einrichten?"
       },
+      "auth_method": {
+        "title": "Wie soll Home Assistant sich verbinden?",
+        "description": "Beim Koppeln holt Home Assistant einen Token vom Gateway unter {host}. Dafür braucht es das Passwort vom Aufkleber, einen Tastendruck am Gerät und Home Assistant im selben Netz wie das Gateway.\n\nWenn du schon einen Token hast oder das Passwort vom Aufkleber lieber nicht eingibst, füge stattdessen den Token ein. Er ist das einzige Geheimnis, das die Integration speichert.",
+        "menu_options": {
+          "credentials": "Mit dem Gerätepasswort koppeln",
+          "reauth_confirm": "Erneut mit dem Gerätepasswort koppeln",
+          "token": "Vorhandenen Token eingeben"
+        }
+      },
       "credentials": {
         "title": "Gerätezugangsdaten",
         "description": "Beide Werte stehen auf dem Aufkleber deines Connect-Key-Moduls.",
@@ -30,12 +39,16 @@
       },
       "proximity": {
         "title": "Tasten am Gateway drücken",
-        "description": "Drücke am Gateway unter {host} die WLAN- und die Funk-Taste etwa eine Sekunde lang gleichzeitig, bis die blaue LED leuchtet. Fahre dann innerhalb von fünf Minuten fort.\n\nDas Gateway gibt einen Token nur an ein Gerät im eigenen Netz aus. Läuft Home Assistant woanders, besorge den Token separat und füge ihn unten ein.",
+        "description": "Drücke am Gateway unter {host} die WLAN- und die Funk-Taste etwa eine Sekunde lang gleichzeitig, bis die blaue LED leuchtet. Fahre dann innerhalb von fünf Minuten fort.\n\nDas Gateway gibt einen Token nur an ein Gerät im eigenen Netz aus."
+      },
+      "token": {
+        "title": "Vorhandener Token",
+        "description": "Füge einen Bearer-Token für das Gateway unter {host} ein. Der Token läuft nicht ab, mehrere können gleichzeitig gültig sein, und die Integration speichert nichts außer ihm. Wie du einen bekommst, steht in der README.",
         "data": {
-          "token": "Vorhandener Token (optional)"
+          "token": "Token"
         },
         "data_description": {
-          "token": "Leer lassen, außer Home Assistant läuft außerhalb des Gateway-Netzes."
+          "token": "Das access_token aus der Antwort von /auth/token am Gateway."
         }
       },
       "reauth_confirm": {
@@ -51,12 +64,15 @@
       "invalid_auth": "Das Gateway hat diese Zugangsdaten abgelehnt. Prüfe Login und Passwort auf dem Aufkleber.",
       "invalid_password_format": "Das Passwort sollte wie aaaa-bbbb-cccc-dddd aussehen.",
       "cannot_connect": "Das Gateway ist nicht erreichbar. Prüfe die Adresse und ob es eingeschaltet ist.",
-      "unknown": "Unerwarteter Fehler"
+      "unknown": "Unerwarteter Fehler",
+      "invalid_token": "Das Gateway hat diesen Token nicht akzeptiert.",
+      "no_gateway_id": "Das Gateway hat keine ID gemeldet, der Token lässt sich damit keinem Gerät zuordnen. Koppel stattdessen mit dem Gerätepasswort."
     },
     "abort": {
       "already_configured": "Dieses Gateway ist bereits eingerichtet.",
       "not_a_gateway": "Das gefundene Gerät ist kein K-40-RF-Gateway.",
-      "reauth_successful": "Verbindung zum Gateway wiederhergestellt."
+      "reauth_successful": "Verbindung zum Gateway wiederhergestellt.",
+      "unique_id_mismatch": "Dieser Token gehört zu einem anderen Gateway als dem, das neu verbunden wird."
     }
   },
   "device": {
