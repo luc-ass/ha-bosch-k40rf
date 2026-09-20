@@ -24,6 +24,11 @@ jobs:
   hacs:
     name: HACS
     runs-on: ubuntu-latest
+    # The action does not look at the checkout: it asks the API for the
+    # repository as HACS would see it, which is the default branch. On a pull
+    # request it would therefore judge main and report the answer as the
+    # branch's, so it runs after the merge and nightly instead.
+    if: github.event_name != 'pull_request'
     steps:
       - uses: actions/checkout@v5
       - uses: hacs/action@main
