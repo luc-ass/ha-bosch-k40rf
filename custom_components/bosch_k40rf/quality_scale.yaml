@@ -89,10 +89,11 @@ rules:
       Entities use device classes and default icons. Giving 191 catalogue
       resources their own icons is worth doing once the entity set settles.
   reconfiguration-flow:
-    status: todo
+    status: done
     comment: >-
-      A moved gateway is picked up by discovery, and a rejected token starts
-      reauth, so the remaining case is a host typed by hand that changed.
+      Changes the host of an entry set up by hand; the stored token proves at
+      the new address that it is the same gateway. A discovered gateway keeps
+      its own address current, and a rejected token starts reauth instead.
   repair-issues:
     status: exempt
     comment: Nothing the user can repair is detectable beyond reauthentication.

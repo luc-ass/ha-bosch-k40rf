@@ -519,3 +519,86 @@ class TestReauth:
         assert result["type"] is FlowResultType.ABORT
         assert result["reason"] == "unique_id_mismatch"
         assert config_entry.data[CONF_TOKEN] == TOKEN
+
+
+class TestReconfigure:
+    """Correcting the address of a gateway that was entered by hand."""
+
+    async def test_the_address_can_be_corrected(
+        self, hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
+    ) -> None:
+        config_entry.add_to_hass(hass)
+        result = await config_entry.start_reconfigure_flow(hass)
+        assert result["step_id"] == "reconfigure"
+        # The form starts from the address that is stored.
+        assert result["data_schema"]({})[CONF_HOST] == HOST
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "192.0.2.77"}
+        )
+        await hass.async_block_till_done()
+
+        assert result["type"] is FlowResultType.ABORT
+        assert result["reason"] == "reconfigure_successful"
+        assert config_entry.data[CONF_HOST] == "192.0.2.77"
+        # Nothing else about the entry moves.
+        assert config_entry.data[CONF_TOKEN] == TOKEN
+
+    async def test_the_stored_token_does_the_checking(
+        self, hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
+    ) -> None:
+        """Nothing is asked of the user beyond the address."""
+        config_entry.add_to_hass(hass)
+        result = await config_entry.start_reconfigure_flow(hass)
+        await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_HOST: "192.0.2.77"})
+        # The successful reconfigure reloads the entry; let that finish.
+        await hass.async_block_till_done()
+
+        args, kwargs = mock_client.flow_factory.call_args
+        assert args[0] == "192.0.2.77"
+        assert kwargs["token"] == TOKEN
+        mock_client.async_request_token.assert_not_called()
+
+    async def test_another_gateway_at_that_address_is_refused(
+        self, hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
+    ) -> None:
+        """A typo that lands on the neighbouring gateway must not rewrite this entry."""
+        mock_client.async_get_system_info.return_value = SystemInfo(
+            gateway_id="900000009", modules=()
+        )
+        config_entry.add_to_hass(hass)
+        result = await config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "192.0.2.77"}
+        )
+
+        assert result["type"] is FlowResultType.ABORT
+        assert result["reason"] == "unique_id_mismatch"
+        assert config_entry.data[CONF_HOST] == HOST
+
+    @pytest.mark.parametrize(
+        ("error", "expected"),
+        [
+            (K40AuthError("rejected"), "invalid_token"),
+            (K40ConnectionError("down"), "cannot_connect"),
+            (K40Error("what"), "unknown"),
+        ],
+    )
+    async def test_a_gateway_that_does_not_answer_keeps_the_form(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        error: Exception,
+        expected: str,
+    ) -> None:
+        mock_client.async_get_system_info.side_effect = error
+        config_entry.add_to_hass(hass)
+        result = await config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"], {CONF_HOST: "192.0.2.77"}
+        )
+
+        assert result["step_id"] == "reconfigure"
+        assert result["errors"] == {"base": expected}
+        assert config_entry.data[CONF_HOST] == HOST

@@ -12,7 +12,7 @@ The manifest declares **bronze**.
 |---|---:|---:|---:|---|
 | Bronze | 13 | 5 | 2 | — |
 | Silver | 8 | 2 | 0 | ⛔ blocked below |
-| Gold | 16 | 1 | 4 | — |
+| Gold | 17 | 1 | 3 | — |
 | Platinum | 3 | 0 | 0 | ⛔ blocked below |
 
 ## What is missing
@@ -22,7 +22,6 @@ The manifest declares **bronze**.
 - **Gold · [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices)** — Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running.
 - **Gold · [entity-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-translations)** — Catalogue resources and their counter components are translated. The dynamic /signals branch is device specific and cannot be translated ahead of time; those entities are named from their id at runtime and are disabled by default.
 - **Gold · [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations)** — Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles.
-- **Gold · [reconfiguration-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/reconfiguration-flow)** — A moved gateway is picked up by discovery, and a rejected token starts reauth, so the remaining case is a host typed by hand that changed.
 
 ## Bronze
 
@@ -86,7 +85,7 @@ The manifest declares **bronze**.
 | [entity-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-translations) | ⬜ | Catalogue resources and their counter components are translated. The dynamic /signals branch is device specific and cannot be translated ahead of time; those entities are named from their id at runtime and are disabled by default. |
 | [exception-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/exception-translations) | ✅ |  |
 | [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations) | ⬜ | Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles. |
-| [reconfiguration-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/reconfiguration-flow) | ⬜ | A moved gateway is picked up by discovery, and a rejected token starts reauth, so the remaining case is a host typed by hand that changed. |
+| [reconfiguration-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/reconfiguration-flow) | ✅ | Changes the host of an entry set up by hand; the stored token proves at the new address that it is the same gateway. A discovered gateway keeps its own address current, and a rejected token starts reauth instead. |
 | [repair-issues](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/repair-issues) | ➖ | Nothing the user can repair is detectable beyond reauthentication. |
 | [stale-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/stale-devices) | ✅ | Circuits, zones and heat sources are devices under the gateway. Discovery enumerates the whole installation or fails the setup, so a circuit missing from it is gone rather than unreachable, and its device is removed at setup. |
 

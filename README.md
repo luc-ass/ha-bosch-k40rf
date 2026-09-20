@@ -86,7 +86,9 @@ The gateway also announces itself over mDNS (`_hvac-open-api._tcp`) and the
 integration listens for that. At the one installation available for testing the
 announcement only turned up *after* the gateway had been addressed once by IP —
 so if it is not offered to you, add it by address; that may well be what makes
-it appear.
+it appear. A gateway found that way keeps its address current by itself; one
+added by hand is corrected under **Settings → Devices & services → Bosch K 40 RF
+→ Reconfigure**.
 
 ### If pairing keeps failing
 

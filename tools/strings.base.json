@@ -57,6 +57,16 @@
         "data": {
           "password": "Password"
         }
+      },
+      "reconfigure": {
+        "title": "Change the gateway's address",
+        "description": "Enter the address the gateway {device_id} is reachable at now. The stored token is used to check that it is still the same gateway.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "The gateway's IP address or hostname."
+        }
       }
     },
     "error": {
@@ -72,7 +82,8 @@
       "already_configured": "This gateway is already set up.",
       "not_a_gateway": "The discovered device is not a K 40 RF gateway.",
       "reauth_successful": "Reconnected to the gateway.",
-      "unique_id_mismatch": "This token belongs to a different gateway than the one being reconnected."
+      "unique_id_mismatch": "This token belongs to a different gateway than the one being reconnected.",
+      "reconfigure_successful": "The address was updated."
     }
   },
   "device": {
