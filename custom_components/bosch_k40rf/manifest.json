@@ -8,6 +8,7 @@
   "documentation": "https://github.com/luc-ass/ha-bosch-k40rf",
   "integration_type": "hub",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/luc-ass/ha-bosch-k40rf/issues",
   "loggers": [
     "pyk40rf"
   ],

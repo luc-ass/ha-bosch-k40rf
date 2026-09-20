@@ -27,21 +27,27 @@ jobs:
           enable-cache: true
 
       - name: Install
-        run: uv sync --group dev
+        run: |
+          uv venv
+          uv pip install --group dev
+          # The library is not a dev dependency. Home Assistant installs what
+          # the manifest pins, so CI reads the pin from there and tests that
+          # exact version -- one place to bump, and no way for the two to drift.
+          uv pip install "$(python3 -c 'import json, pathlib; print(json.loads(pathlib.Path("custom_components/bosch_k40rf/manifest.json").read_text())["requirements"][0])')"
 
       - name: Ruff
         run: |
-          uv run ruff check .
-          uv run ruff format --check .
+          .venv/bin/ruff check .
+          .venv/bin/ruff format --check .
 
       - name: Mypy
-        run: uv run mypy custom_components
+        run: .venv/bin/mypy custom_components
 
       # Bronze asks for full config-flow coverage; the floor is well under
       # where the suite actually sits, so it catches a collapse, not a rounding.
       - name: Tests
         run: >
-          uv run pytest
+          .venv/bin/pytest
           --cov=custom_components/bosch_k40rf
           --cov-report=term-missing
           --cov-fail-under=95
@@ -51,5 +57,5 @@ jobs:
       # an edit to one of them alone would go out and then be overwritten.
       - name: The generated strings are current
         run: |
-          uv run python tools/generate_strings.py
+          .venv/bin/python tools/generate_strings.py
           git diff --exit-code custom_components/bosch_k40rf/strings.json custom_components/bosch_k40rf/translations/en.json
