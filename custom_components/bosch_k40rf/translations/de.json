@@ -57,6 +57,16 @@
         "data": {
           "password": "Passwort"
         }
+      },
+      "reconfigure": {
+        "title": "Adresse des Gateways ändern",
+        "description": "Gib die Adresse ein, unter der das Gateway {device_id} jetzt erreichbar ist. Mit dem gespeicherten Token wird geprüft, ob es noch dasselbe Gateway ist.",
+        "data": {
+          "host": "Host"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Gateways."
+        }
       }
     },
     "error": {
@@ -72,7 +82,8 @@
       "already_configured": "Dieses Gateway ist bereits eingerichtet.",
       "not_a_gateway": "Das gefundene Gerät ist kein K-40-RF-Gateway.",
       "reauth_successful": "Verbindung zum Gateway wiederhergestellt.",
-      "unique_id_mismatch": "Dieser Token gehört zu einem anderen Gateway als dem, das neu verbunden wird."
+      "unique_id_mismatch": "Dieser Token gehört zu einem anderen Gateway als dem, das neu verbunden wird.",
+      "reconfigure_successful": "Die Adresse wurde aktualisiert."
     }
   },
   "device": {

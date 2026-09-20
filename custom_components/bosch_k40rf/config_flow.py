@@ -277,6 +277,50 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
         )
         return token.access_token
 
+    async def async_step_reconfigure(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Let the user correct the address of a gateway entered by hand.
+
+        A discovered gateway keeps its own address current, and a token the
+        gateway stops accepting starts reauth. Neither covers the remaining
+        case: an address that was typed once and has changed since. The stored
+        token proves at the new address that it is still the same gateway --
+        a second one on the same network would answer with a different id.
+        """
+        entry = self._get_reconfigure_entry()
+        errors: dict[str, str] = {}
+
+        self._port = entry.data.get(CONF_PORT, DATA_PORT)
+        self._auth_port = entry.data.get(CONF_AUTH_PORT, AUTH_PORT)
+        self._username = entry.data.get(CONF_USERNAME)
+
+        if user_input is not None:
+            self._host = user_input[CONF_HOST].strip()
+
+            try:
+                system_info = await self._async_read_system_info(entry.data[CONF_TOKEN])
+            except K40AuthError:
+                errors["base"] = "invalid_token"
+            except K40ConnectionError:
+                errors["base"] = "cannot_connect"
+            except K40Error:
+                _LOGGER.exception("Unexpected error while checking a new address")
+                errors["base"] = "unknown"
+            else:
+                await self.async_set_unique_id(system_info.gateway_id or entry.unique_id)
+                self._abort_if_unique_id_mismatch()
+                return self.async_update_reload_and_abort(
+                    entry, data_updates={CONF_HOST: self._host}
+                )
+
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema({vol.Required(CONF_HOST, default=entry.data[CONF_HOST]): str}),
+            errors=errors,
+            description_placeholders={"device_id": entry.unique_id or ""},
+        )
+
     async def _async_read_system_info(self, token: str) -> SystemInfo:
         """Read the gateway's own description with a token, to check both."""
         client = K40Client(
