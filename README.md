@@ -12,7 +12,7 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.8.**
+> **Beta — version 0.1.9.**
 >
 > Two heating systems have ever run this, both air-to-water heat pumps with a
 > single heating circuit: the development system, which also has hot water and
@@ -274,12 +274,13 @@ usually a commit the same day, and your system joins the table.
 ## Differences from the Home Assistant Core version
 
 This repository is the HACS build. What a Core submission carries differs in
-four places:
+five places:
 
 | | HACS (here) | Core |
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
+| `manifest.json` → `issue_tracker` | required by HACS | must be absent |
 | `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.4` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
