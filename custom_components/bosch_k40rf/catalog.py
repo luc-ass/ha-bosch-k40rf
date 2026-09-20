@@ -55,7 +55,10 @@ CATALOG: tuple[ResourceSpec, ...] = (
     ResourceSpec(
         path="/devices/uhc/assignedTo",
         value_type="stringValue",
-        options=("unassigned", "hc2", "hc3", "hc4"),
+        # Our own gateway leaves hc1 out; two others offer it. The enumeration
+        # is the installation's, not the firmware's -- a live reading's
+        # allowedValues always wins over this fallback.
+        options=("unassigned", "hc1", "hc2", "hc3", "hc4"),
         description="Get the UHC assignment.",
         live_confirmed=True,
     ),
@@ -893,6 +896,7 @@ CATALOG: tuple[ResourceSpec, ...] = (
         placeholder="heatingCircuitId",
         unit="%",
         description="Get the mixer position of the heating circuit.",
+        live_confirmed=True,
     ),
     ResourceSpec(
         path="/heatingCircuits/{heatingCircuitId}/overallStatus",

@@ -237,6 +237,23 @@ def test_a_cascade_leaves_an_unnumbered_signal_on_the_gateway(system_info: Syste
     )
 
 
+def test_a_mixer_module_joins_the_circuit_it_drives(system_info: SystemInfo) -> None:
+    """Seen on a two-circuit Bosch CS5800iAW (discussion #1).
+
+    A mixed circuit is driven by its own module, and that module heads its
+    signals itself -- HC2MOD.FlowTemp -- instead of hanging them under the
+    system controller. They still report on hc2.
+    """
+    devices = tree(system_info, Installation(heating_circuits=("hc1", "hc2")))
+    hc2 = devices.for_resource("/heatingCircuits/hc2/maxFlowTemp", "hc2")
+    for signal in ("HC2MOD.FlowTemp", "HC2MOD.FlowCtrl.MixerPosition"):
+        assert devices.for_signal(f"/signals/{signal}") == hc2
+    # Without that circuit there is no device to join, and the name has to
+    # keep saying which one it meant.
+    lone = tree(system_info, Installation(heating_circuits=("hc1",)))
+    assert lone.for_signal("/signals/HC2MOD.FlowTemp") == lone.hub
+
+
 def test_a_signal_for_a_circuit_this_house_lacks_stays_on_the_gateway(
     system_info: SystemInfo, installation: Installation
 ) -> None:
@@ -312,6 +329,19 @@ class TestSignalNames:
     ) -> None:
         _, parts = tree(system_info, installation).signal_target(f"/signals/{signal}")
         assert signal_name(parts) == expected
+
+    def test_a_mixer_module_still_says_it_is_the_module(self, system_info: SystemInfo) -> None:
+        """On hc2's device the circuit drops out; the module must not.
+
+        SC.HC2.FlowTempSetp is what the controller asks of the circuit,
+        HC2MOD.FlowTemp what the mixer module measures. Two devices, one
+        circuit -- so the name has to keep them apart.
+        """
+        devices = tree(system_info, Installation(heating_circuits=("hc1", "hc2")))
+        _, parts = devices.signal_target("/signals/HC2MOD.FlowCtrl.MixerPosition")
+        assert signal_name(parts) == "Module flow control mixer position"
+        _, parts = devices.signal_target("/signals/HC2MOD.FlowTemp")
+        assert signal_name(parts) == "Module flow temperature"
 
     def test_an_undiscovered_circuit_is_kept_in_the_name(
         self, system_info: SystemInfo, installation: Installation

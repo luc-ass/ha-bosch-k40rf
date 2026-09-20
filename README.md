@@ -200,8 +200,8 @@ imported into long-term statistics.
 
 ## Tested installations
 
-204 resources are declared and **103 have ever answered on real hardware**,
-across two installations. The rest is written against the spec, and the
+204 resources are declared and **104 have ever answered on real hardware**,
+across three installations. The rest is written against the spec, and the
 spec is not a safe assumption: of the 100 paths that could be compared against
 a live device, **21 disagreed with it** — a unit written `rpm"`, a JSON boolean
 inside a `stringValue`, an enum differing in case, sensor-fault sentinels that
@@ -212,6 +212,7 @@ examples, which nothing validates, and they have drifted from the firmware.
 |---|---|---|---|---|
 | Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
 | Buderus Logatherm WLW186i-12 TP70 + WLW MB-5 AR | `heatpump_single`, EMS 2.0 | hs1, hc1 | 15.00.01 | 65 resources, 99 signals |
+| Compress CS5800iAW 12 MB + AW 10 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, **hc2**, dhw1 | 15.00.01 | 78 resources, 120 signal ids |
 
 The second one ([#2](https://github.com/luc-ass/ha-bosch-k40rf/issues/2)) shows
 what such a file is worth. It added two resources nobody had ever seen answer,
@@ -219,6 +220,16 @@ which is the small half. The other half: 31 controller signals that do not
 exist on the first machine, the fact that every field is non-writable on a
 gateway that is not ours, and a bug in how two heating-circuit setpoints were
 read — which would have gone unnoticed until the first cold day.
+
+The third ([discussion #1](https://github.com/luc-ass/ha-bosch-k40rf/discussions/1))
+is the first **second heating circuit** this code has ever met, and it is a
+mixed one: it reports a mixer position, a separate maximum flow temperature,
+and three signals from the mixer module itself under a head segment — `HC2MOD.*`
+— that appears on no other machine and used to leave those readings on the
+gateway. It also found a bug worth more than any of that: with EEBUS
+commissioned, one field answers with raw bytes inside a JSON string, and a
+single unreadable field used to cost the whole poll. All 120 of this
+installation's signals were lost to it.
 
 **If your system is not in this table, its diagnostics file is the most useful
 thing you can send** — particularly a cascade, solar, a pool, a gas or oil
