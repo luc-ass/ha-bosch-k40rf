@@ -12,13 +12,13 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.9.**
+> **Beta — version 0.1.10.**
 >
-> Two heating systems have ever run this, both air-to-water heat pumps with a
-> single heating circuit: the development system, which also has hot water and
-> mechanical ventilation, and a Buderus Logatherm with neither. Everything
-> else — cascades, solar, pools, gas and oil boilers, several circuits, radio
-> zones — follows Bosch's published spec and has never met hardware.
+> Three heating systems have ever run this, all air-to-water heat pumps: the
+> development system, which also has hot water and mechanical ventilation, a
+> Buderus Logatherm with neither, and one with a second, mixed heating circuit.
+> Everything else — cascades, solar, pools, gas and oil boilers, radio zones —
+> follows Bosch's published spec and has never met hardware.
 >
 > Expect rough edges, and expect entity **names** to keep changing while the
 > shape of things settles. Entity and device **identities** have been stable
@@ -292,7 +292,7 @@ five places:
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
 | `manifest.json` → `issue_tracker` | required by HACS | must be absent |
-| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.4` | `pyk40rf==0.1.x`, from PyPI |
+| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.5` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
 `pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.
