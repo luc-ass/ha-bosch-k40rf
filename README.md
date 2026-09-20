@@ -71,9 +71,16 @@ Through [HACS](https://hacs.xyz):
 2. Install **Bosch K 40 RF**, then restart Home Assistant.
 3. **Settings → Devices & services → Add integration → Bosch K 40 RF**, and
    enter the gateway's IP address.
-4. Enter the login and password from the sticker on the Connect-Key module.
-5. When asked, **press the WLAN and radio buttons on the gateway together for
+4. Choose **Pair with the device password**.
+5. Enter the login and password from the sticker on the Connect-Key module.
+6. When asked, **press the WLAN and radio buttons on the gateway together for
    about a second**, until the blue LED lights up, then continue.
+
+The other branch, **Enter an existing token**, asks for nothing but a token —
+see [below](#if-pairing-keeps-failing). Take it if Home Assistant cannot reach
+the gateway's own network, or if you would rather obtain and rotate the token
+yourself: the token is the only credential the integration ever stores, and the
+sticker password is never written to disk either way.
 
 The gateway also announces itself over mDNS (`_hvac-open-api._tcp`) and the
 integration listens for that. At the one installation available for testing the
@@ -89,8 +96,9 @@ hold, and both failures report the same error.
 
 If Home Assistant runs elsewhere — a different VLAN, a routed VPN — pairing can
 never succeed from there. Get the token yourself from any machine on the
-gateway's network, and paste it into the optional field on the last step of the
-setup dialogue.
+gateway's network, and choose **Enter an existing token** in the setup dialogue.
+The same choice is offered when a stored token stops working, so a token you
+rotate yourself can be handed in again.
 
 Press the WLAN and radio buttons together for about a second, then, within the
 next few minutes:
