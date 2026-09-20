@@ -92,7 +92,14 @@ _SIGNAL_CIRCUITS: dict[str, tuple[str, str]] = {
     "VENT": ("ventilation", "zone"),
 }
 
-_SIGNAL_CIRCUIT_SEGMENT = re.compile(rf"^({'|'.join(_SIGNAL_CIRCUITS)})(\d+)$")
+#: A mixed circuit is driven by its own module, and that module heads its
+#: signals itself instead of hanging them under the system controller:
+#: HC2MOD.FlowTemp next to SC.HC2.FlowTempSetp. It reports on the circuit, so
+#: it belongs on the circuit's device -- but it is a separate box, and the
+#: readings are its own, so the name keeps saying so.
+_SIGNAL_MODULE = "MOD"
+
+_SIGNAL_CIRCUIT_SEGMENT = re.compile(rf"^({'|'.join(_SIGNAL_CIRCUITS)})(\d+)({_SIGNAL_MODULE})?$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -158,6 +165,8 @@ class DeviceTree:
                 branch, prefix = _SIGNAL_CIRCUITS[match.group(1)]
                 device = self.branches.get((branch, f"{prefix}{match.group(2)}"))
                 if device is not None:
+                    if match.group(3):
+                        kept.append("Module")
                     continue
             kept.append(segment)
 
