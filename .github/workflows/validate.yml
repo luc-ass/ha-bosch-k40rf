@@ -1,0 +1,39 @@
+name: Validate
+
+# hassfest and HACS check the packaging rather than the code: manifest keys,
+# the shape of the translations, the repository layout. Both also move on their
+# own, so they run nightly as well as on every change.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "30 4 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  hassfest:
+    name: hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: home-assistant/actions/hassfest@master
+
+  hacs:
+    name: HACS
+    runs-on: ubuntu-latest
+    # The action does not look at the checkout: it asks the API for the
+    # repository as HACS would see it, which is the default branch. On a pull
+    # request it would therefore judge main and report the answer as the
+    # branch's, so it runs after the merge and nightly instead.
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hacs/action@main
+        with:
+          category: integration
+          # The domain is not in home-assistant/brands yet. The assets that
+          # HACS shows live in custom_components/bosch_k40rf/brand instead.
+          ignore: brands
