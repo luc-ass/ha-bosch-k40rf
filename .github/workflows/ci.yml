@@ -55,7 +55,8 @@ jobs:
       # strings.json and translations/en.json are written by the generator from
       # the catalogue and strings.base.json. Only the generated files ship, so
       # an edit to one of them alone would go out and then be overwritten.
-      - name: The generated strings are current
+      - name: The generated files are current
         run: |
           .venv/bin/python tools/generate_strings.py
-          git diff --exit-code custom_components/bosch_k40rf/strings.json custom_components/bosch_k40rf/translations/en.json
+          .venv/bin/python tools/quality_report.py
+          git diff --exit-code custom_components/bosch_k40rf/strings.json custom_components/bosch_k40rf/translations/en.json QUALITY.md

@@ -4,11 +4,19 @@ rules:
     status: exempt
     comment: The device API is read-only, so the integration provides no actions.
   appropriate-polling: done
-  brands: todo
+  brands:
+    status: todo
+    comment: >-
+      Needs a PR to home-assistant/brands. The eight assets are rendered and
+      live in custom_components/bosch_k40rf/brand, which is what HACS displays.
   common-modules: done
   config-flow-test-coverage: done
   config-flow: done
-  dependency-transparency: todo
+  dependency-transparency:
+    status: todo
+    comment: >-
+      pyk40rf is pulled from its GitHub tag. The rule wants a PyPI release built
+      from source in a public CI pipeline; the library needs publishing first.
   docs-actions:
     status: exempt
     comment: No actions are provided.
@@ -75,8 +83,16 @@ rules:
       of time; those entities are named from their id at runtime and are
       disabled by default.
   exception-translations: done
-  icon-translations: todo
-  reconfiguration-flow: todo
+  icon-translations:
+    status: todo
+    comment: >-
+      Entities use device classes and default icons. Giving 191 catalogue
+      resources their own icons is worth doing once the entity set settles.
+  reconfiguration-flow:
+    status: todo
+    comment: >-
+      A moved gateway is picked up by discovery, and a rejected token starts
+      reauth, so the remaining case is a host typed by hand that changed.
   repair-issues:
     status: exempt
     comment: Nothing the user can repair is detectable beyond reauthentication.

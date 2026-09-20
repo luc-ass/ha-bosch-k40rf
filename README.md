@@ -308,13 +308,17 @@ mypy custom_components/bosch_k40rf
 python -m script.hassfest --integration-path .../custom_components/bosch_k40rf
 ```
 
-Two files are generated and must not be hand-edited; the rules behind the names
-live in `naming.py` and feed both:
+Three files are generated and must not be hand-edited; the rules behind the
+names live in `naming.py` and feed the first two:
 
 ```bash
 python tools/generate_catalog.py    # catalog.py, from the API spec + a live harvest
 python tools/generate_strings.py    # strings.json + translations/en.json
+python tools/quality_report.py      # QUALITY.md, from quality_scale.yaml
 ```
+
+[`QUALITY.md`](QUALITY.md) is where the integration stands against Home
+Assistant's quality scale, and what each open rule still needs.
 
 Somebody else's diagnostics file is read with:
 
