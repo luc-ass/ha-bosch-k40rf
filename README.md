@@ -1,3 +1,5 @@
+![Bosch K 40 RF and Buderus MX400 — Home Assistant integration via local API](https://raw.githubusercontent.com/luc-ass/ha-bosch-k40rf/main/images/banner.webp)
+
 # Bosch K 40 RF / Buderus MX 400 for Home Assistant
 
 Reads a Bosch Connect-Key **K 40 RF** heating gateway over its local API — the
