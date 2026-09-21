@@ -85,7 +85,7 @@ The manifest declares **bronze**.
 | [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations) | ⬜ | Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles. |
 | [reconfiguration-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/reconfiguration-flow) | ✅ | Changes the host of an entry set up by hand; the stored token proves at the new address that it is the same gateway. A discovered gateway keeps its own address current, and a rejected token starts reauth instead. |
 | [repair-issues](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/repair-issues) | ➖ | Nothing the user can repair is detectable beyond reauthentication. |
-| [stale-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/stale-devices) | ✅ | Circuits, zones and heat sources are devices under the gateway. Discovery enumerates the whole installation or fails the setup, so a circuit missing from it is gone rather than unreachable, and its device is removed at setup. |
+| [stale-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/stale-devices) | ✅ | Through async_remove_config_entry_device, as the rule allows where a device's absence cannot be told from its silence: the API has no device list, and a circuit whose module has no power answers exactly like one that was taken out. A removal would take the entities with it, and with them the names, areas and enabled signals the user had set, so the delete button is offered on devices the gateway no longer reports. |
 
 ## Platinum
 

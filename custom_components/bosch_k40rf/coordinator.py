@@ -147,9 +147,8 @@ class K40DataCoordinator(K40BaseCoordinator):
 
         self.installation = installation
         # Dropping a vanished circuit's paths is not the same as removing its
-        # device: the entities stay and go unavailable, and the device is only
-        # removed on the next reload, where a completed discovery vouches for
-        # its absence.
+        # device: the entities stay and go unavailable. Deleting is the user's
+        # call -- a module without power answers exactly like one taken out.
         self.candidates = [c for c in expanded if c.path in known or c.path in present]
         self._paths = [c.path for c in self.candidates]
 

@@ -61,8 +61,10 @@ API at all.
   want.
 - **A circuit fitted later turns up by itself.** The installation is probed
   again once an hour, so a second heating circuit gets its device and its
-  entities without a restart. One taken out goes unavailable and is removed on
-  the next reload.
+  entities without a restart. One that stops answering goes unavailable and
+  stays: a module without power looks exactly like one that was removed, so
+  deleting it is a button on its device page rather than something that
+  happens to you.
 - **Faults read as "unknown", not as −3276.8 °C.** The gateway reports a broken
   sensor as a sentinel value; those are recognised instead of charted.
 
