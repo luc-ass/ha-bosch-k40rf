@@ -14,7 +14,7 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.14.**
+> **Beta — version 0.1.16.**
 >
 > Three heating systems have ever run this, all air-to-water heat pumps: the
 > development system, which also has hot water and mechanical ventilation, a
@@ -335,7 +335,7 @@ four places:
 | `manifest.json` → `issue_tracker` | required by HACS | must be absent |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
-The dependency is the same in both: `pyk40rf==0.1.6` from PyPI, built from
+The dependency is the same in both: `pyk40rf==0.1.7` from PyPI, built from
 source by the library's own release workflow.
 
 ## Development
