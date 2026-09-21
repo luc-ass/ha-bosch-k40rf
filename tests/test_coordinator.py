@@ -99,6 +99,8 @@ async def test_the_signal_channel_stays_quiet_while_nothing_listens(
     assert coordinator.paths == [
         "/signals/SRC.OutdoorTemp",
         "/signals/SRC.CUHP.HP1.CompressorStatus",
+        "/signals/GWEEBUS.CEM.ID",
+        "/signals/GWEEBUS.CEM.SKI",
     ]
 
     before = mock_client.async_get_many.call_count

@@ -288,10 +288,12 @@ or, if nothing is actually wrong, post it in
 [Discussions](https://github.com/luc-ass/ha-bosch-k40rf/discussions) — a file
 from a system that simply works is worth exactly as much.
 
-The file leaves out your token, your gateway id, the serial numbers and the
-gateway's MAC addresses. It does contain your heating readings — temperatures,
-energy counters, which circuits exist — and the gateway's address on your own
-network. Have a look before attaching it.
+The file leaves out your token, your gateway id, the serial numbers, the
+gateway's MAC addresses and the two EEBUS fields that name your energy manager
+rather than your heating (`GWEEBUS.CEM.ID`, which carries a host name, and the
+certificate fingerprint in `GWEEBUS.CEM.SKI`). It does contain your heating
+readings — temperatures, energy counters, which circuits exist — and the
+gateway's address on your own network. Have a look before attaching it.
 
 What happens to it: `tools/report_from_diagnostics.py` turns it into a list of
 what your system confirms that ours never had, what it serves that the

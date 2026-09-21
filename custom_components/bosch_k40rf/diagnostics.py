@@ -30,14 +30,29 @@ from .types import K40ConfigEntry, K40RuntimeData
 #: The token is a permanent credential and the login is printed on the device.
 TO_REDACT = {CONF_TOKEN, CONF_USERNAME, "gatewayId", "serial_number", "ProductSerialNumber"}
 
-#: Resources whose *value* identifies the hardware rather than describing it.
-#: Redaction elsewhere goes by key, which cannot reach these: a resource is
-#: ``{"id": "/gateway/eth/mac", "value": "..."}``, so the key is always
-#: "value". These files are meant to be attached to public issues -- two have
-#: been already -- and a MAC address is the one thing in them that follows the
-#: box around. The LAN address is left alone: it is private space, it changes,
+#: Resources whose *value* identifies its owner rather than describing the
+#: heating system. Redaction elsewhere goes by key, which cannot reach these:
+#: a resource is ``{"id": "/gateway/eth/mac", "value": "..."}``, so the key is
+#: always "value" and only the path can say what the value is. These files are
+#: written to be attached to public issues, and several have been.
+#:
+#: The MACs follow the box around. The two EEBUS fields name the owner rather
+#: than the appliance: ``CEM.ID`` is whatever their energy manager calls
+#: itself, which on a Home Assistant bridge carries the host name, and
+#: ``CEM.SKI`` is the certificate fingerprint their gateway is paired to.
+#: Neither says anything about the heating system, so redacting them costs the
+#: file nothing.
+#:
+#: The LAN address is left alone on purpose: it is private space, it changes,
 #: and it is the first thing worth knowing when a gateway stops answering.
-REDACTED_VALUE_PATHS = frozenset({"/gateway/eth/mac", "/gateway/wifi/mac"})
+REDACTED_VALUE_PATHS = frozenset(
+    {
+        "/gateway/eth/mac",
+        "/gateway/wifi/mac",
+        "/signals/GWEEBUS.CEM.ID",
+        "/signals/GWEEBUS.CEM.SKI",
+    }
+)
 
 
 async def async_get_config_entry_diagnostics(

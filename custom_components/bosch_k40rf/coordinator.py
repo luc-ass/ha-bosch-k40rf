@@ -9,11 +9,14 @@ from typing import Any
 
 from pyk40rf import Installation, K40AuthError, K40Client, K40Error, Resource, StringResource
 
+from homeassistant.const import Platform
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
+from .binary_resources import BOOLEAN_SIGNALS, is_flag_signal
 from .const import (
     DOMAIN,
     INSTALLATION_PROBE_INTERVAL,
@@ -23,7 +26,6 @@ from .const import (
 )
 from .devices import build_device_tree
 from .resources import ResourceCandidate, candidates_for
-from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
@@ -237,7 +239,44 @@ class K40SignalCoordinator(K40BaseCoordinator):
             return self.data or {}
         readings = await self._fetch(self._paths)
         self._warn_about_unknown_flags(readings)
+        self._drop_stale_signal_entities(readings)
         return readings
+
+    def _drop_stale_signal_entities(self, readings: dict[str, Resource]) -> None:
+        """Remove each signal's entity on the platform it no longer belongs to.
+
+        Before 0.1.15 every signal was a sensor, flags included. A unique id is
+        scoped per platform, so the binary sensor is created without conflict
+        -- but nothing touches the sensor's registry entry, and an entity no
+        integration provides any more does not disappear: it restores as
+        unavailable and goes on filling searches and pickers for good.
+
+        Done here rather than at setup because here is the only place that
+        knows. Which platform a signal belongs to is answered by the generated
+        list while there is no reading, and that list is generalised from the
+        installations we hold: it grows with every contribution, and an
+        appliance nobody has sent a file for may answer one of those ids with
+        something that is not a flag. Deleting on the strength of the list
+        alone would be deleting on a guess, and the entity it took could be
+        the right one, carrying a rename, an area and its history. A dead
+        entity is an annoyance; a deleted live one is not recoverable.
+
+        So nothing is removed until a reading has said which way round it is.
+        On an installation where the branch is never polled -- the default --
+        the stale entry simply stays, disabled, where nobody meets it; and
+        enabling it is what makes the branch be read, which is what removes it.
+        """
+        registry = er.async_get(self.hass)
+        gateway_id = self.config_entry.runtime_data.gateway_id
+        for path, reading in readings.items():
+            if path not in BOOLEAN_SIGNALS:
+                continue
+            wrong = Platform.SENSOR if is_flag_signal(path, reading) else Platform.BINARY_SENSOR
+            unique_id = f"{gateway_id}_{path.strip('/').replace('/', '_').replace('.', '_')}"
+            stale = registry.async_get_entity_id(wrong, DOMAIN, unique_id)
+            if stale is not None:
+                _LOGGER.debug("Removing %s; this signal belongs to the other platform", stale)
+                registry.async_remove(stale)
 
     def _warn_about_unknown_flags(self, readings: dict[str, Resource]) -> None:
         """Name any flag signal the catalogue does not know about yet.

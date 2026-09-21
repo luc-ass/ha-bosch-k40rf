@@ -9,7 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from pyk40rf import Resource, StringResource
+
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+
+from .signal_booleans import BOOLEAN_SIGNALS
+
+__all__ = ["BINARY_RESOURCES", "BOOLEAN_SIGNALS", "BY_TEMPLATE", "BinaryResource", "is_flag_signal"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,3 +52,26 @@ BINARY_RESOURCES: tuple[BinaryResource, ...] = (
 )
 
 BY_TEMPLATE = {resource.path: resource for resource in BINARY_RESOURCES}
+
+
+def is_flag_signal(path: str, resource: Resource | None) -> bool:
+    """Whether a ``/signals`` reading belongs to the binary sensor platform.
+
+    :data:`BOOLEAN_SIGNALS` decides while there is no reading, because the
+    entity has to exist before the branch is ever polled. But that list is
+    generalised from the installations we hold, and an appliance nobody has
+    contributed a file for may answer one of those ids with something that is
+    not a flag -- several of them are named like measurements
+    (``HighestPermittedTemp``, ``LowestPermittedFlowTemp``). Believing the
+    list over the gateway would put such a reading nowhere at all: no sensor
+    built for it, and a binary sensor that can only ever read unknown.
+
+    So once there is a reading it wins. Both platforms are re-consulted on
+    every poll, so the sensor turns up at the one after the branch is first
+    read, rather than never.
+    """
+    if path not in BOOLEAN_SIGNALS:
+        return False
+    if resource is None:
+        return True
+    return isinstance(resource, StringResource) and resource.is_boolean

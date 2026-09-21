@@ -24,11 +24,10 @@ import sys
 
 HERE = Path(__file__).parent
 REPO = HERE / "../../.."
-HARVESTS = (
-    REPO / "recon/responses/owner/signals",
-    REPO / "recon/responses/contributed/buderus-wlw186i-issue2/signals",
-    REPO / "recon/responses/contributed/bosch-cs5800iaw-discussion1/signals",
-)
+#: Globbed rather than listed, so a contribution that lands in the corpus is
+#: picked up by running this -- a hardcoded list would go on producing the old
+#: answer, in silence, which is the one failure mode a generator must not have.
+HARVEST_GLOBS = ("recon/responses/*/signals", "recon/responses/*/*/signals")
 TARGET = HERE / "../custom_components/bosch_k40rf/signal_booleans.py"
 
 FLAG_WORDS = frozenset({"true", "false"})
@@ -89,13 +88,27 @@ def device_class(signal_id: str) -> str | None:
     return max(matches, key=lambda match: len(match[0]))[1]
 
 
-def collect() -> dict[str, list[str]]:
-    """Index every harvested string signal by id, keeping the values seen."""
+def harvests() -> list[Path]:
+    """Every signal harvest in the corpus, ours and the contributed ones."""
+    found = {
+        directory.resolve()
+        for pattern in HARVEST_GLOBS
+        for directory in REPO.glob(pattern)
+        if directory.is_dir()
+    }
+    return sorted(found)
+
+
+def collect(directories: list[Path]) -> dict[str, list[str]]:
+    """Index every harvested string signal by id, keeping the values seen.
+
+    A harvest entry without a value says nothing about the id -- the earliest
+    contributions were bare ids, because one unreadable field used to sink the
+    whole poll. Those are skipped rather than read as the word "none", which
+    would silently demote a genuine flag the moment such a harvest is added.
+    """
     seen: dict[str, set[str]] = {}
-    for harvest in HARVESTS:
-        if not harvest.is_dir():
-            print(f"missing harvest: {harvest}", file=sys.stderr)
-            continue
+    for harvest in directories:
         for path in harvest.glob("*.json"):
             if path.stem.startswith("_"):
                 continue
@@ -103,6 +116,8 @@ def collect() -> dict[str, list[str]]:
             if payload.get("type") != "stringValue":
                 continue
             value = payload.get("value")
+            if value is None:
+                continue
             seen.setdefault(str(payload["id"]), set()).add(str(value).strip().lower())
     return {key: sorted(values) for key, values in sorted(seen.items())}
 
@@ -145,7 +160,10 @@ def render(flags: dict[str, str | None]) -> str:
 
 def main() -> int:
     """Write the module and format it."""
-    harvested = collect()
+    directories = harvests()
+    for directory in directories:
+        print(f"harvest: {directory.relative_to(REPO.resolve())}", file=sys.stderr)
+    harvested = collect(directories)
     flags: dict[str, str | None] = {}
     for signal_id, values in harvested.items():
         if set(values) <= FLAG_WORDS:

@@ -29,7 +29,7 @@ async def test_diagnostics_describe_the_installation(
 
     assert result["installation"]["heat_sources"] == ["hs1"]
     assert result["installation"]["heating_circuits"] == ["hc1"]
-    assert result["installation"]["signal_count"] == 2
+    assert result["installation"]["signal_count"] == 4
     assert "/heatSources/returnTemperature" in result["resources"]
     assert result["polled_paths"]
 
@@ -68,7 +68,7 @@ async def test_diagnostics_read_every_signal(
     await setup_entry(hass, config_entry)
     result = await get_diagnostics_for_config_entry(hass, hass_client, config_entry)
 
-    assert result["signals"]["count"] == 2
+    assert result["signals"]["count"] == 4
     assert result["signals"]["resources"][signal]["value"] == 11.5
 
 
@@ -142,6 +142,34 @@ async def test_the_gateway_mac_addresses_are_redacted(
         # The resource still has to be visible, or its absence reads as a
         # gateway that does not serve it.
         assert result["resources"][path]["id"] == path
+
+
+async def test_the_eebus_identity_fields_are_redacted(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    mock_client: AsyncMock,
+    config_entry: MockConfigEntry,
+    readings: dict[str, object],
+) -> None:
+    """These name the owner, not the appliance, so they cost the file nothing.
+
+    ``CEM.ID`` is whatever their energy manager calls itself -- on a Home
+    Assistant bridge that carries the host name -- and ``CEM.SKI`` is the
+    certificate fingerprint their gateway is paired to.
+    """
+    signals = {
+        "/signals/GWEEBUS.CEM.ID": "HomeAssistant-EEBUS-Bridge-ha-myhost",
+        "/signals/GWEEBUS.CEM.SKI": "0123456789abcdef",
+    }
+    for path, value in signals.items():
+        readings[path] = parse_resource({"id": path, "type": "stringValue", "value": value})
+    await setup_entry(hass, config_entry)
+    result = await get_diagnostics_for_config_entry(hass, hass_client, config_entry)
+
+    for value in signals.values():
+        assert value not in str(result)
+    for path in signals:
+        assert result["signals"]["resources"][path]["value"] == REDACTED
 
 
 async def test_the_lan_address_is_kept(

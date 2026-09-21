@@ -18,13 +18,12 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .binary_resources import BY_TEMPLATE as BINARY_RESOURCE_PATHS
+from .binary_resources import BY_TEMPLATE as BINARY_RESOURCE_PATHS, is_flag_signal
 from .coordinator import K40BaseCoordinator
 from .devices import DeviceTree
 from .entity import K40Entity
 from .naming import component_key, component_name, english_name, signal_name, translation_key
 from .resources import ResourceCandidate
-from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry, K40RuntimeData
 from .units import mapping_for
 
@@ -111,11 +110,11 @@ def _build_signal_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Itera
     coordinator = runtime.signal_coordinator
     gateway_id = runtime.gateway_id
     for path in coordinator.paths:
-        if path in BOOLEAN_SIGNALS:
+        resource = (coordinator.data or {}).get(path)
+        if is_flag_signal(path, resource):
             # A flag is a binary sensor; showing it twice helps nobody.
             continue
         device_info, name_parts = devices.signal_target(path)
-        resource = (coordinator.data or {}).get(path)
         description = SensorEntityDescription(
             key=_key_for(path),
             # The id is the fallback: a name is better, but never at the cost

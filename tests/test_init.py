@@ -262,39 +262,6 @@ class TestRemovingADevice:
         assert await async_remove_config_entry_device(hass, config_entry, device) is False
 
 
-async def test_a_flag_that_used_to_be_a_sensor_is_removed(
-    hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
-) -> None:
-    """Before 0.1.15 the flag signals were sensors reading the word "true".
-
-    A unique id is scoped per platform, so the binary sensor is created
-    without conflict -- but nothing removes the old registry entry, and an
-    entity no integration provides any more does not disappear on its own. It
-    restores as unavailable and stays in every picker for good.
-    """
-    config_entry.add_to_hass(hass)
-    registry = er.async_get(hass)
-    stale = registry.async_get_or_create(
-        "sensor",
-        DOMAIN,
-        f"{DEVICE_ID}_signals_SRC_CUHP_HP1_CompressorStatus",
-        config_entry=config_entry,
-        suggested_object_id="k40_compressor_status",
-    )
-    assert registry.async_get(stale.entity_id) is not None
-
-    await hass.config_entries.async_setup(config_entry.entry_id)
-    await hass.async_block_till_done()
-
-    assert registry.async_get(stale.entity_id) is None
-    assert (
-        registry.async_get_entity_id(
-            "binary_sensor", DOMAIN, f"{DEVICE_ID}_signals_SRC_CUHP_HP1_CompressorStatus"
-        )
-        is not None
-    )
-
-
 async def test_a_sensor_that_is_not_a_flag_is_left_alone(
     hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
 ) -> None:

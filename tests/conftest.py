@@ -64,6 +64,8 @@ def installation_fixture() -> Installation:
             # A flag: the controller writes these as the words "true"/"false",
             # and they are the larger half of the branch.
             "/signals/SRC.CUHP.HP1.CompressorStatus",
+            "/signals/GWEEBUS.CEM.ID",
+            "/signals/GWEEBUS.CEM.SKI",
         ),
     )
 

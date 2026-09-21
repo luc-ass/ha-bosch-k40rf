@@ -10,12 +10,11 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .binary_resources import BY_TEMPLATE
+from .binary_resources import BOOLEAN_SIGNALS, BY_TEMPLATE, is_flag_signal
 from .coordinator import K40BaseCoordinator
 from .devices import DeviceTree
 from .entity import K40Entity
 from .naming import english_name, signal_name, translation_key
-from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry, K40RuntimeData
 
 PARALLEL_UPDATES = 0
@@ -104,7 +103,7 @@ def _build_signal_sensors(
             devices.signal_target(path)[0],
         )
         for path in coordinator.paths
-        if path in BOOLEAN_SIGNALS
+        if is_flag_signal(path, (coordinator.data or {}).get(path))
     ]
 
 
