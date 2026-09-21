@@ -12,13 +12,12 @@ The manifest declares **bronze**.
 |---|---:|---:|---:|---|
 | Bronze | 14 | 5 | 1 | — |
 | Silver | 8 | 2 | 0 | ⛔ blocked below |
-| Gold | 17 | 1 | 3 | — |
+| Gold | 18 | 1 | 2 | — |
 | Platinum | 3 | 0 | 0 | ⛔ blocked below |
 
 ## What is missing
 
 - **Bronze · [brands](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/brands)** — Needs a PR to home-assistant/brands. The eight assets are rendered and live in custom_components/bosch_k40rf/brand, which is what HACS displays.
-- **Gold · [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices)** — Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running.
 - **Gold · [entity-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-translations)** — Catalogue resources and their counter components are translated. The dynamic /signals branch is device specific and cannot be translated ahead of time; those entities are named from their id at runtime and are disabled by default.
 - **Gold · [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations)** — Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles.
 
@@ -77,7 +76,7 @@ The manifest declares **bronze**.
 | [docs-supported-functions](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-supported-functions) | ✅ |  |
 | [docs-troubleshooting](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-troubleshooting) | ✅ |  |
 | [docs-use-cases](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-use-cases) | ✅ |  |
-| [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices) | ⬜ | Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running. |
+| [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices) | ✅ | The installation is probed again hourly, and a circuit that appears gets its device and entities without a reload. Radio zones and devices stay out of that probe: 48 further ids, none of them ever seen answering. |
 | [entity-category](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-category) | ✅ |  |
 | [entity-device-class](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-device-class) | ✅ |  |
 | [entity-disabled-by-default](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-disabled-by-default) | ✅ |  |

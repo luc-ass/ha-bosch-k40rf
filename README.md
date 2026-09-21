@@ -59,6 +59,10 @@ API at all.
   appliance's decision, not ours: of the two systems tested, one serves 87 and
   the other 99, with 68 in common. Disabled by default; switch on the ones you
   want.
+- **A circuit fitted later turns up by itself.** The installation is probed
+  again once an hour, so a second heating circuit gets its device and its
+  entities without a restart. One taken out goes unavailable and is removed on
+  the next reload.
 - **Faults read as "unknown", not as −3276.8 °C.** The gateway reports a broken
   sensor as a sentinel value; those are recognised instead of charted.
 

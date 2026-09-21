@@ -64,10 +64,11 @@ rules:
   docs-troubleshooting: done
   docs-use-cases: done
   dynamic-devices:
-    status: todo
+    status: done
     comment: >-
-      Circuits are probed once per setup. A circuit added to the heating system
-      later is picked up on the next reload, not while running.
+      The installation is probed again hourly, and a circuit that appears gets
+      its device and entities without a reload. Radio zones and devices stay
+      out of that probe: 48 further ids, none of them ever seen answering.
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done

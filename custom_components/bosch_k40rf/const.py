@@ -24,6 +24,13 @@ CONF_AUTH_PORT: Final = "auth_port"
 #: moves over minutes rather than seconds.
 SCAN_INTERVAL: Final = timedelta(seconds=60)
 
+#: How often the installation is probed again, to notice a circuit that was
+#: added to the heating system while Home Assistant was running. The probe
+#: costs about thirty requests, so it does not belong in the minute poll --
+#: and a heating circuit appears when somebody rebuilds the plumbing, not
+#: while the pump runs.
+INSTALLATION_PROBE_INTERVAL: Final = timedelta(hours=1)
+
 #: Diagnostic signals change slowly and are disabled by default, so they are
 #: polled on their own, much slower schedule.
 SIGNAL_SCAN_INTERVAL: Final = timedelta(minutes=10)

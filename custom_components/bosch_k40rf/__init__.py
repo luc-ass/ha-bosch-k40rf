@@ -78,10 +78,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
     entry.runtime_data = K40RuntimeData(
         coordinator=coordinator,
         signal_coordinator=signal_coordinator,
-        installation=installation,
         system_info=system_info,
         gateway_id=gateway_id,
         devices=devices,
+        hub=hub,
+        hub_device_id=hub_entry.id,
     )
 
     _LOGGER.debug(

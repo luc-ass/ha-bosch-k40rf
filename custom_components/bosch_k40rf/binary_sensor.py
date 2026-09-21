@@ -5,7 +5,7 @@ from __future__ import annotations
 from pyk40rf import NumericResource, StringResource
 
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -13,7 +13,7 @@ from .binary_resources import BY_TEMPLATE
 from .coordinator import K40BaseCoordinator
 from .entity import K40Entity
 from .naming import english_name, translation_key
-from .types import K40ConfigEntry
+from .types import K40ConfigEntry, K40RuntimeData
 
 PARALLEL_UPDATES = 0
 
@@ -23,9 +23,29 @@ async def async_setup_entry(
     entry: K40ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up the binary sensors this gateway has."""
+    """Set up the binary sensors this gateway has.
+
+    A circuit the coordinator finds later brings its own, so the platform
+    keeps adding what it has not seen yet rather than deciding once.
+    """
     runtime = entry.runtime_data
-    entities = [
+    seen: set[str] = set()
+
+    @callback
+    def _add_new_sensors() -> None:
+        entities = [entity for entity in _build_sensors(runtime) if entity.unique_id not in seen]
+        if not entities:
+            return
+        seen.update(str(entity.unique_id) for entity in entities)
+        async_add_entities(entities)
+
+    _add_new_sensors()
+    entry.async_on_unload(runtime.coordinator.async_add_listener(_add_new_sensors))
+
+
+def _build_sensors(runtime: K40RuntimeData) -> list[K40BinarySensor]:
+    """Describe every two-state resource this gateway is known to answer."""
+    return [
         K40BinarySensor(
             runtime.coordinator,
             BinarySensorEntityDescription(
@@ -42,7 +62,6 @@ async def async_setup_entry(
         for candidate in runtime.coordinator.candidates
         if candidate.spec.path in BY_TEMPLATE
     ]
-    async_add_entities(entities)
 
 
 class K40BinarySensor(K40Entity, BinarySensorEntity):
