@@ -224,6 +224,11 @@ than momentary readings, while a `Timer` counts down and is not. The three
 parts of `SC.InstallationDate` are a date, so they are charted as nothing at
 all.
 
+If you had flag signals enabled before 0.1.15, they were sensors reading the
+word "true"; the sensors are removed on upgrade and the binary sensors arrive
+disabled, so switch the ones you want back on. A rename or an area you had set
+on one of them is lost with it.
+
 Which signals are **flags** cannot come from the reading, because the entity
 has to exist before the branch is ever polled — and it is not polled at all
 while every one of its entities is disabled, which is the normal case. So that

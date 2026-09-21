@@ -9,12 +9,13 @@ from pyk40rf import AUTH_PORT, DATA_PORT, K40AuthError, K40Client, K40Error
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_AUTH_PORT, DOMAIN, MAX_CONCURRENT_REQUESTS
 from .coordinator import K40DataCoordinator, K40SignalCoordinator
 from .devices import brand, build_device_tree, build_hub, firmware_version
+from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry, K40RuntimeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,8 +92,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
         len(installation.signals),
     )
 
+    _drop_flag_sensors(hass, entry, gateway_id)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
+
+
+def _drop_flag_sensors(hass: HomeAssistant, entry: K40ConfigEntry, gateway_id: str) -> None:
+    """Remove the sensors the flag signals used to be, before 0.1.15.
+
+    Those readings are binary sensors now. A unique id is scoped per platform,
+    so the new entity is created without conflict -- but the old registry
+    entry is not touched by that, and an entity nothing provides any more does
+    not disappear: it stays in the list, restores as unavailable, and goes on
+    showing up in searches and pickers for good.
+
+    So the stale ones are removed here. This loses a rename or an area set on
+    one of them, which is a real cost and a smaller one than fifty dead
+    entities; their history is orphaned either way, because the text they
+    recorded cannot be carried into a binary sensor.
+    """
+    registry = er.async_get(hass)
+    for path in BOOLEAN_SIGNALS:
+        unique_id = f"{gateway_id}_{path.strip('/').replace('/', '_').replace('.', '_')}"
+        stale = registry.async_get_entity_id(Platform.SENSOR, DOMAIN, unique_id)
+        if stale is not None:
+            _LOGGER.debug("Removing %s; this signal is a binary sensor now", stale)
+            registry.async_remove(stale)
 
 
 async def async_remove_config_entry_device(
