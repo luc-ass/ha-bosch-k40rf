@@ -24,6 +24,7 @@ from .devices import DeviceTree
 from .entity import K40Entity
 from .naming import component_key, component_name, english_name, signal_name, translation_key
 from .resources import ResourceCandidate
+from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry, K40RuntimeData
 from .units import mapping_for
 
@@ -110,6 +111,9 @@ def _build_signal_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Itera
     coordinator = runtime.signal_coordinator
     gateway_id = runtime.gateway_id
     for path in coordinator.paths:
+        if path in BOOLEAN_SIGNALS:
+            # A flag is a binary sensor; showing it twice helps nobody.
+            continue
         device_info, name_parts = devices.signal_target(path)
         resource = (coordinator.data or {}).get(path)
         description = SensorEntityDescription(

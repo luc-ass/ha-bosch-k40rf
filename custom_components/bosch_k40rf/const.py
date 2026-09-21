@@ -7,6 +7,11 @@ from typing import Final
 
 DOMAIN: Final = "bosch_k40rf"
 
+#: Where an installation that differs from the ones seen so far gets reported.
+#: The /signals branch is per appliance and in no specification, so the only
+#: way it is ever learned is somebody sending in what their box answers.
+ISSUE_URL: Final = "https://github.com/luc-ass/ha-bosch-k40rf/issues"
+
 #: Used only where the gateway does not report ``/gateway/brand`` itself.
 #: The same hardware is sold as Bosch, Buderus and a handful of other brands.
 DEFAULT_MANUFACTURER: Final = "Bosch"

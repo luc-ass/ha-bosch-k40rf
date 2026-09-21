@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import timedelta
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from freezegun.api import FrozenDateTimeFactory
 from pyk40rf import Installation, K40AuthError, K40ConnectionError, parse_resource
+import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry, async_fire_time_changed
 
 from custom_components.bosch_k40rf.const import DOMAIN, INSTALLATION_PROBE_INTERVAL, SCAN_INTERVAL
@@ -95,7 +96,10 @@ async def test_the_signal_channel_stays_quiet_while_nothing_listens(
     await setup_entry(hass, config_entry)
 
     coordinator = config_entry.runtime_data.signal_coordinator
-    assert coordinator.paths == ["/signals/SRC.OutdoorTemp"]
+    assert coordinator.paths == [
+        "/signals/SRC.OutdoorTemp",
+        "/signals/SRC.CUHP.HP1.CompressorStatus",
+    ]
 
     before = mock_client.async_get_many.call_count
     await coordinator.async_refresh()
@@ -309,3 +313,57 @@ async def test_the_signal_channel_polls_at_once_for_the_first_listener(
     coordinator.async_add_listener(lambda: None, "/signals/SRC.OutdoorTemp")
     await hass.async_block_till_done()
     assert mock_client.async_get_many.call_count == calls
+
+
+async def test_a_flag_the_catalogue_does_not_know_is_named_in_the_log(
+    hass: HomeAssistant,
+    mock_client: AsyncMock,
+    config_entry: MockConfigEntry,
+    readings: dict[str, object],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The list of flags is only as complete as the installations behind it.
+
+    An appliance nobody has sent a diagnostics file for may carry flags none
+    of ours do. Those come out as sensors reading the word "true", which works
+    and reads badly -- so the poll says so, once, and the next report fixes it.
+    """
+    unknown = "/signals/SRC.SomeFlagNobodyHasSeen"
+    config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    coordinator = config_entry.runtime_data.signal_coordinator
+    coordinator.set_signals((unknown,))
+    readings[unknown] = parse_resource({"id": unknown, "type": "stringValue", "value": "false"})
+
+    with patch.object(type(coordinator), "async_contexts_available", True):
+        await coordinator.async_refresh()
+
+    assert unknown in caplog.text
+    assert "binary sensors" in caplog.text
+
+
+async def test_a_string_that_is_not_a_flag_is_not_reported(
+    hass: HomeAssistant,
+    mock_client: AsyncMock,
+    config_entry: MockConfigEntry,
+    readings: dict[str, object],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """An identity string reads as no flag at all, so it must stay quiet."""
+    identity = "/signals/GWEEBUS.CEM.ID"
+    config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    coordinator = config_entry.runtime_data.signal_coordinator
+    coordinator.set_signals((identity,))
+    readings[identity] = parse_resource(
+        {"id": identity, "type": "stringValue", "value": "HomeAssistant-EEBUS-Bridge"}
+    )
+
+    with patch.object(type(coordinator), "async_contexts_available", True):
+        await coordinator.async_refresh()
+
+    assert identity not in caplog.text

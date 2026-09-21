@@ -20,7 +20,7 @@ from typing import Any
 
 from pyk40rf import K40Error, Resource
 
-from homeassistant.components.diagnostics import async_redact_data
+from homeassistant.components.diagnostics import REDACTED, async_redact_data
 from homeassistant.const import CONF_TOKEN, CONF_USERNAME
 from homeassistant.core import HomeAssistant
 
@@ -29,6 +29,15 @@ from .types import K40ConfigEntry, K40RuntimeData
 
 #: The token is a permanent credential and the login is printed on the device.
 TO_REDACT = {CONF_TOKEN, CONF_USERNAME, "gatewayId", "serial_number", "ProductSerialNumber"}
+
+#: Resources whose *value* identifies the hardware rather than describing it.
+#: Redaction elsewhere goes by key, which cannot reach these: a resource is
+#: ``{"id": "/gateway/eth/mac", "value": "..."}``, so the key is always
+#: "value". These files are meant to be attached to public issues -- two have
+#: been already -- and a MAC address is the one thing in them that follows the
+#: box around. The LAN address is left alone: it is private space, it changes,
+#: and it is the first thing worth knowing when a gateway stops answering.
+REDACTED_VALUE_PATHS = frozenset({"/gateway/eth/mac", "/gateway/wifi/mac"})
 
 
 async def async_get_config_entry_diagnostics(
@@ -68,7 +77,7 @@ async def async_get_config_entry_diagnostics(
         ),
         "devices": _devices(runtime),
         "resources": {
-            path: async_redact_data(dict(resource.raw), TO_REDACT)
+            path: _redact_resource(path, resource)
             for path, resource in (coordinator.data or {}).items()
         },
         "polled_paths": coordinator.paths,
@@ -84,6 +93,14 @@ async def async_get_config_entry_diagnostics(
         ),
         "signals": await _signals(runtime),
     }
+
+
+def _redact_resource(path: str, resource: Resource) -> dict[str, Any]:
+    """Return one resource's raw payload, minus anything identifying."""
+    payload = async_redact_data(dict(resource.raw), TO_REDACT)
+    if path in REDACTED_VALUE_PATHS and "value" in payload:
+        payload["value"] = REDACTED
+    return payload
 
 
 def _devices(runtime: K40RuntimeData) -> list[dict[str, Any]]:
@@ -132,7 +149,6 @@ async def _signals(runtime: K40RuntimeData) -> dict[str, Any]:
     return {
         "count": len(paths),
         "resources": {
-            path: async_redact_data(dict(resource.raw), TO_REDACT)
-            for path, resource in readings.items()
+            path: _redact_resource(path, resource) for path, resource in readings.items()
         },
     }

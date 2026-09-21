@@ -7,16 +7,23 @@ from datetime import timedelta
 import logging
 from typing import Any
 
-from pyk40rf import Installation, K40AuthError, K40Client, K40Error, Resource
+from pyk40rf import Installation, K40AuthError, K40Client, K40Error, Resource, StringResource
 
 from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, INSTALLATION_PROBE_INTERVAL, SCAN_INTERVAL, SIGNAL_SCAN_INTERVAL
+from .const import (
+    DOMAIN,
+    INSTALLATION_PROBE_INTERVAL,
+    ISSUE_URL,
+    SCAN_INTERVAL,
+    SIGNAL_SCAN_INTERVAL,
+)
 from .devices import build_device_tree
 from .resources import ResourceCandidate, candidates_for
+from .signal_booleans import BOOLEAN_SIGNALS
 from .types import K40ConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
@@ -189,6 +196,7 @@ class K40SignalCoordinator(K40BaseCoordinator):
         """Initialise the signal coordinator."""
         super().__init__(hass, entry, client, f"{DOMAIN} signals", SIGNAL_SCAN_INTERVAL)
         self._first_poll_requested = False
+        self._reported_flags: list[str] = []
 
     @callback
     def async_add_listener(
@@ -227,7 +235,37 @@ class K40SignalCoordinator(K40BaseCoordinator):
         """Poll the signals that have at least one enabled entity."""
         if not self.async_contexts_available:
             return self.data or {}
-        return await self._fetch(self._paths)
+        readings = await self._fetch(self._paths)
+        self._warn_about_unknown_flags(readings)
+        return readings
+
+    def _warn_about_unknown_flags(self, readings: dict[str, Resource]) -> None:
+        """Name any flag signal the catalogue does not know about yet.
+
+        Which signals are flags cannot be read off a live value, because the
+        entity has to exist before the branch is ever polled -- so the answer
+        is a generated list, and the list is only as complete as the
+        installations it was built from. An appliance nobody has contributed a
+        diagnostics file for may well carry flags none of ours do; those come
+        out as sensors reading the word "true", which works but reads badly.
+        Saying so once per start is what turns the next diagnostics file into
+        a longer list.
+        """
+        unknown = sorted(
+            path
+            for path, resource in readings.items()
+            if path not in BOOLEAN_SIGNALS
+            and isinstance(resource, StringResource)
+            and resource.is_boolean
+        )
+        if unknown and unknown != self._reported_flags:
+            self._reported_flags = unknown
+            _LOGGER.info(
+                "These signals read as flags but are modelled as sensors: %s. "
+                "Please report them at %s so they become binary sensors",
+                ", ".join(unknown),
+                ISSUE_URL,
+            )
 
     @property
     def async_contexts_available(self) -> bool:

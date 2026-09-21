@@ -58,9 +58,10 @@ API at all.
   shape and keep their own units instead of being mislabelled as energy.
 - **Diagnostic signals from the controller itself** — compressor speed, valve
   positions, frost protection, bus status. How many there are is the
-  appliance's decision, not ours: of the two systems tested, one serves 87 and
-  the other 99, with 68 in common. Disabled by default; switch on the ones you
-  want.
+  appliance's decision, not ours: of the three systems tested, they serve 87,
+  99 and 119. About half are flags, and those are binary sensors rather than
+  text reading the word "true", so an automation says `is_on`. Disabled by
+  default; switch on the ones you want.
 - **A circuit fitted later turns up by itself.** The installation is probed
   again once an hour, so a second heating circuit gets its device and its
   entities without a restart. One that stops answering goes unavailable and
@@ -223,6 +224,13 @@ than momentary readings, while a `Timer` counts down and is not. The three
 parts of `SC.InstallationDate` are a date, so they are charted as nothing at
 all.
 
+Which signals are **flags** cannot come from the reading, because the entity
+has to exist before the branch is ever polled — and it is not polled at all
+while every one of its entities is disabled, which is the normal case. So that
+one comes from a list built out of the installations people have sent in. A
+flag the list does not know stays a sensor reading "true", and the log names it
+once per start so the next report can fix it.
+
 History (`/recordings`) is available from the API but is not polled, and not
 imported into long-term statistics.
 
@@ -240,7 +248,7 @@ examples, which nothing validates, and they have drifted from the firmware.
 |---|---|---|---|---|
 | Compress CS5800iAW 12 MB + AW 12 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, dhw1, ventilation zone1 | 15.00.01 | 101 resources, 87 signals |
 | Buderus Logatherm WLW186i-12 TP70 + WLW MB-5 AR | `heatpump_single`, EMS 2.0 | hs1, hc1 | 15.00.01 | 65 resources, 99 signals |
-| Compress CS5800iAW 12 MB + AW 10 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, **hc2**, dhw1 | 15.00.01 | 78 resources, 120 signal ids |
+| Compress CS5800iAW 12 MB + AW 10 OR-T | `heatpump_single`, EMS 2.0 | hs1, hc1, **hc2**, dhw1 | 15.00.01 | 78 resources, 120 signals |
 
 The second one ([#2](https://github.com/luc-ass/ha-bosch-k40rf/issues/2)) shows
 what such a file is worth. It added two resources nobody had ever seen answer,
@@ -259,6 +267,11 @@ commissioned, one field answers with raw bytes inside a JSON string, and a
 single unreadable field used to cost the whole poll. All 120 of this
 installation's signals were lost to it.
 
+Its **second** file, sent after that fix shipped, is what made the flags
+visible: 119 signals with values rather than 120 bare ids, and 52 of them
+reading the words "true" or "false" at a sensor that could only show them as
+text. A file from a system that already works is worth this much.
+
 **If your system is not in this table, its diagnostics file is the most useful
 thing you can send** — particularly a cascade, solar, a pool, a gas or oil
 boiler, several heating circuits, or zones with radio thermostats.
@@ -270,9 +283,10 @@ or, if nothing is actually wrong, post it in
 [Discussions](https://github.com/luc-ass/ha-bosch-k40rf/discussions) — a file
 from a system that simply works is worth exactly as much.
 
-The file leaves out your token, your gateway id and the serial numbers. It does
-contain your heating readings: temperatures, energy counters, which circuits
-exist. Have a look before attaching it.
+The file leaves out your token, your gateway id, the serial numbers and the
+gateway's MAC addresses. It does contain your heating readings — temperatures,
+energy counters, which circuits exist — and the gateway's address on your own
+network. Have a look before attaching it.
 
 What happens to it: `tools/report_from_diagnostics.py` turns it into a list of
 what your system confirms that ours never had, what it serves that the

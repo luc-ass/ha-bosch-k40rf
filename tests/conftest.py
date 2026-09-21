@@ -59,7 +59,12 @@ def installation_fixture() -> Installation:
         dhw_circuits=("dhw1",),
         ventilation_zones=("zone1",),
         has_ventilation=True,
-        signals=("/signals/SRC.OutdoorTemp",),
+        signals=(
+            "/signals/SRC.OutdoorTemp",
+            # A flag: the controller writes these as the words "true"/"false",
+            # and they are the larger half of the branch.
+            "/signals/SRC.CUHP.HP1.CompressorStatus",
+        ),
     )
 
 

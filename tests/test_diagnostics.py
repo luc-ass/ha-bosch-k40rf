@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.components.diagnostics import (
 )
 from pytest_homeassistant_custom_component.typing import ClientSessionGenerator
 
+from homeassistant.components.diagnostics import REDACTED
 from homeassistant.core import HomeAssistant
 
 from .conftest import DEVICE_ID, TOKEN
@@ -28,7 +29,7 @@ async def test_diagnostics_describe_the_installation(
 
     assert result["installation"]["heat_sources"] == ["hs1"]
     assert result["installation"]["heating_circuits"] == ["hc1"]
-    assert result["installation"]["signal_count"] == 1
+    assert result["installation"]["signal_count"] == 2
     assert "/heatSources/returnTemperature" in result["resources"]
     assert result["polled_paths"]
 
@@ -67,7 +68,7 @@ async def test_diagnostics_read_every_signal(
     await setup_entry(hass, config_entry)
     result = await get_diagnostics_for_config_entry(hass, hass_client, config_entry)
 
-    assert result["signals"]["count"] == 1
+    assert result["signals"]["count"] == 2
     assert result["signals"]["resources"][signal]["value"] == 11.5
 
 
@@ -113,3 +114,48 @@ async def test_the_token_never_appears_in_diagnostics(
     rendered = str(result)
     assert TOKEN not in rendered
     assert DEVICE_ID not in rendered
+
+
+async def test_the_gateway_mac_addresses_are_redacted(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    mock_client: AsyncMock,
+    config_entry: MockConfigEntry,
+    readings: dict[str, object],
+) -> None:
+    """These files get attached to public issues; a MAC follows the box.
+
+    Redaction elsewhere goes by key, which cannot reach this one: every
+    resource carries its reading under "value", so only the path says that
+    this particular value identifies the hardware.
+    """
+    for path in ("/gateway/eth/mac", "/gateway/wifi/mac"):
+        readings[path] = parse_resource(
+            {"id": path, "type": "stringValue", "value": "f0:4a:3d:0b:a2:6f"}
+        )
+    await setup_entry(hass, config_entry)
+    result = await get_diagnostics_for_config_entry(hass, hass_client, config_entry)
+
+    assert "f0:4a:3d:0b:a2:6f" not in str(result)
+    for path in ("/gateway/eth/mac", "/gateway/wifi/mac"):
+        assert result["resources"][path]["value"] == REDACTED
+        # The resource still has to be visible, or its absence reads as a
+        # gateway that does not serve it.
+        assert result["resources"][path]["id"] == path
+
+
+async def test_the_lan_address_is_kept(
+    hass: HomeAssistant,
+    hass_client: ClientSessionGenerator,
+    mock_client: AsyncMock,
+    config_entry: MockConfigEntry,
+    readings: dict[str, object],
+) -> None:
+    """It is private space, it changes, and it is the first thing to check."""
+    readings["/gateway/eth/ip/ipv4"] = parse_resource(
+        {"id": "/gateway/eth/ip/ipv4", "type": "stringValue", "value": "192.168.147.55"}
+    )
+    await setup_entry(hass, config_entry)
+    result = await get_diagnostics_for_config_entry(hass, hass_client, config_entry)
+
+    assert result["resources"]["/gateway/eth/ip/ipv4"]["value"] == "192.168.147.55"
