@@ -12,7 +12,7 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.10.**
+> **Beta — version 0.1.11.**
 >
 > Three heating systems have ever run this, all air-to-water heat pumps: the
 > development system, which also has hot water and mechanical ventilation, a
@@ -287,19 +287,17 @@ usually a commit the same day, and your system joins the table.
 ## Differences from the Home Assistant Core version
 
 This repository is the HACS build. What a Core submission carries differs in
-five places:
+four places:
 
 | | HACS (here) | Core |
 |---|---|---|
 | `manifest.json` → `documentation` | this repository | `home-assistant.io/integrations/bosch_k40rf` |
 | `manifest.json` → `version` | required | must be absent |
 | `manifest.json` → `issue_tracker` | required by HACS | must be absent |
-| `manifest.json` → `requirements` | `pyk40rf@git+…@v0.1.5` | `pyk40rf==0.1.x`, from PyPI |
 | Brand images | `custom_components/bosch_k40rf/brand/` | PR to `home-assistant/brands` |
 
-`pyk40rf` is not on PyPI yet, so the integration pulls it from its GitHub tag.
-Core requires a PyPI release (`dependency-transparency`), so that has to change
-before submission.
+The dependency is the same in both: `pyk40rf==0.1.6` from PyPI, built from
+source by the library's own release workflow.
 
 ## Development
 
