@@ -10,7 +10,7 @@ The manifest declares **bronze**.
 
 | Tier | ✅ done | ➖ exempt | ⬜ todo | reached |
 |---|---:|---:|---:|---|
-| Bronze | 13 | 5 | 2 | — |
+| Bronze | 14 | 5 | 1 | — |
 | Silver | 8 | 2 | 0 | ⛔ blocked below |
 | Gold | 17 | 1 | 3 | — |
 | Platinum | 3 | 0 | 0 | ⛔ blocked below |
@@ -18,7 +18,6 @@ The manifest declares **bronze**.
 ## What is missing
 
 - **Bronze · [brands](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/brands)** — Needs a PR to home-assistant/brands. The eight assets are rendered and live in custom_components/bosch_k40rf/brand, which is what HACS displays.
-- **Bronze · [dependency-transparency](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dependency-transparency)** — pyk40rf is pulled from its GitHub tag. The rule wants a PyPI release built from source in a public CI pipeline; the library needs publishing first.
 - **Gold · [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices)** — Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running.
 - **Gold · [entity-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-translations)** — Catalogue resources and their counter components are translated. The dynamic /signals branch is device specific and cannot be translated ahead of time; those entities are named from their id at runtime and are disabled by default.
 - **Gold · [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations)** — Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles.
@@ -33,7 +32,7 @@ The manifest declares **bronze**.
 | [common-modules](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/common-modules) | ✅ |  |
 | [config-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/config-flow) | ✅ |  |
 | [config-flow-test-coverage](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/config-flow-test-coverage) | ✅ |  |
-| [dependency-transparency](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dependency-transparency) | ⬜ | pyk40rf is pulled from its GitHub tag. The rule wants a PyPI release built from source in a public CI pipeline; the library needs publishing first. |
+| [dependency-transparency](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dependency-transparency) | ✅ |  |
 | [docs-actions](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-actions) | ➖ | No actions are provided. |
 | [docs-conditions](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-conditions) | ➖ | No conditions are provided. |
 | [docs-high-level-description](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-high-level-description) | ✅ |  |
