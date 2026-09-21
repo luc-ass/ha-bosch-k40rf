@@ -86,3 +86,71 @@ class TestMultiCounterResources:
     def test_consumption_counters_are_energy(self) -> None:
         mapping = mapping_for("kWh", "/heatSources/emon/totalConsumption")
         assert mapping.device_class is SensorDeviceClass.ENERGY
+
+
+class TestTheControllersOwnCounters:
+    """The signal branch spells its counters differently from the catalogue.
+
+    Its ids are dotted, and the controller marks its own lifetime counters
+    with a ``Stats`` segment. Read as momentary values they produced an
+    hourly mean of a number that only ever goes up.
+    """
+
+    @pytest.mark.parametrize(
+        ("unit", "path"),
+        [
+            ("s", "/signals/SRC.CUHP.HP1.Stats.CompressorCH"),
+            ("s", "/signals/SRC.CUHP.HP1.Stats.CompressorDHW"),
+            ("s", "/signals/SRC.CUHP.Stats.ControlUnit"),
+        ],
+    )
+    def test_a_stats_counter_is_a_total(self, unit: str, path: str) -> None:
+        mapping = mapping_for(unit, path)
+        assert mapping.device_class is SensorDeviceClass.DURATION
+        assert mapping.state_class is SensorStateClass.TOTAL_INCREASING
+
+    def test_a_start_count_without_a_unit_is_a_total(self) -> None:
+        """The gateway reports this one as a bare number."""
+        mapping = mapping_for(None, "/signals/SRC.CUHP.HP1.Stats.CompStartsCooling")
+        assert mapping.unit is None
+        assert mapping.state_class is SensorStateClass.TOTAL_INCREASING
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            "/signals/SRC.CUHP.HP1.Timer.CompressorRestart",
+            "/signals/SRC.CUHP.HP1.Timer.TDWarmKeeping",
+            "/signals/SC.SeasonOpt.TimerStopHeatingSeason",
+        ],
+    )
+    def test_a_timer_counts_down_and_stays_a_measurement(self, path: str) -> None:
+        assert mapping_for("s", path).state_class is SensorStateClass.MEASUREMENT
+
+
+class TestADateIsNotADuration:
+    """``SC.InstallationDate.*`` is one date in three readings.
+
+    Day 1, month 10, year 25: the first of October 2025. Charted as durations
+    they claimed the plant had run for a day, and the mean of "month" over an
+    hour means nothing at all.
+    """
+
+    @pytest.mark.parametrize(
+        ("unit", "path"),
+        [
+            ("day", "/signals/SC.InstallationDate.Day"),
+            ("month", "/signals/SC.InstallationDate.Month"),
+            ("year", "/signals/SC.InstallationDate.Year"),
+        ],
+    )
+    def test_it_carries_no_class_and_no_unit(self, unit: str, path: str) -> None:
+        mapping = mapping_for(unit, path)
+        assert mapping.unit is None
+        assert mapping.device_class is None
+        assert mapping.state_class is None
+
+    def test_a_real_duration_still_is_one(self) -> None:
+        """Spans of time arrive in seconds or minutes, never in days."""
+        assert mapping_for("s", "/signals/SRC.CUHP.HP1.Timer.CompressorRestart").device_class is (
+            SensorDeviceClass.DURATION
+        )

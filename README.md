@@ -215,7 +215,11 @@ small requests; at most four run at a time.
 
 A signal's unit and its label table come from the reading, not from a
 catalogue: `SRC.OutdoorTemp` is a temperature in °C with a history, and
-`SC.SeasonOpt.Mode` an enumeration that reads **HEATING**.
+`SC.SeasonOpt.Mode` an enumeration that reads **HEATING**. The controller's
+own lifetime counters — everything under a `Stats` segment — are totals rather
+than momentary readings, while a `Timer` counts down and is not. The three
+parts of `SC.InstallationDate` are a date, so they are charted as nothing at
+all.
 
 History (`/recordings`) is available from the API but is not polled, and not
 imported into long-term statistics.

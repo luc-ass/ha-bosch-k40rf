@@ -59,19 +59,32 @@ UNIT_MAP: Final[dict[str, UnitMapping]] = {
     "s": UnitMapping(UnitOfTime.SECONDS, SensorDeviceClass.DURATION),
     "min": UnitMapping(UnitOfTime.MINUTES, SensorDeviceClass.DURATION),
     "mins": UnitMapping(UnitOfTime.MINUTES, SensorDeviceClass.DURATION),
-    "day": UnitMapping(UnitOfTime.DAYS, SensorDeviceClass.DURATION),
-    "month": UnitMapping(None),
-    "year": UnitMapping(None),
 }
+
+#: Units the controller uses only to break a date into its parts, and never
+#: for a span of time: ``SC.InstallationDate.Day`` is the first of October,
+#: not one day of anything. Charting the mean of "month = 10" is nonsense, so
+#: these carry no unit and no class at all. Durations arrive in "s" or "mins".
+_CALENDAR_UNITS: Final = frozenset({"day", "month", "year"})
 
 #: A percentage is a humidity reading only where the path says so; everything
 #: else in percent is a modulation or a fill level, which has no device class.
 _HUMIDITY_HINTS: Final = ("humidity",)
 _BATTERY_HINTS: Final = ("battery",)
 
-#: Lifetime counters the gateway reports as plain numbers. They only ever go
-#: up, and long-term statistics are the point of having them.
-_TOTAL_HINTS: Final = ("numberofstarts", "runtime", "workingtime", "operatingtime")
+#: Lifetime counters. They only ever go up, and long-term statistics are the
+#: point of having them. The static branch spells them out in the path; the
+#: controller's own signals sit under a ``Stats`` segment -- ``Stats.CompressorCH``
+#: is 126 days of compressor, not a momentary reading. ``Timer`` is the
+#: opposite and stays a measurement: those count down to zero.
+_TOTAL_HINTS: Final = (
+    "numberofstarts",
+    "compstarts",
+    "runtime",
+    "workingtime",
+    "operatingtime",
+    ".stats.",
+)
 
 
 def mapping_for(unit: str | None, path: str) -> UnitMapping:
@@ -88,6 +101,9 @@ def mapping_for(unit: str | None, path: str) -> UnitMapping:
     if unit is None:
         if any(hint in lowered for hint in _TOTAL_HINTS):
             return UnitMapping(None, None, SensorStateClass.TOTAL_INCREASING)
+        return UnitMapping(None, None, None)
+
+    if unit in _CALENDAR_UNITS:
         return UnitMapping(None, None, None)
 
     mapping = UNIT_MAP.get(unit)
