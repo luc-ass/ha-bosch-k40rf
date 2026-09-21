@@ -16,7 +16,7 @@
   "requirements": [
     "pyk40rf==0.1.6"
   ],
-  "version": "0.1.13",
+  "version": "0.1.14",
   "zeroconf": [
     "_hvac-open-api._tcp.local."
   ]
