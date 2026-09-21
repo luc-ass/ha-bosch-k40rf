@@ -167,8 +167,14 @@ def _apply_numeric(
     useless where the gateway has told us what the codes mean.
     """
     if resource.is_enum:
+        # An enumeration carries neither: Home Assistant rejects a sensor that
+        # claims a unit or a state class alongside a set of options.
         return replace(
-            description, device_class=SensorDeviceClass.ENUM, options=list(resource.options)
+            description,
+            device_class=SensorDeviceClass.ENUM,
+            options=list(resource.options),
+            native_unit_of_measurement=None,
+            state_class=None,
         )
 
     mapping = mapping_for(resource.unit, path)
@@ -211,6 +217,62 @@ class K40Sensor(K40Entity, SensorEntity):
     """A sensor backed by one gateway resource."""
 
     entity_description: SensorEntityDescription
+
+    @property
+    def _described(self) -> SensorEntityDescription:
+        """The description, completed from the live reading where it is blank.
+
+        A signal's entity is built before its branch has ever been polled --
+        the readings are what say whether a signal is a temperature, a
+        duration or an enumeration, and there are none yet. Reading that off
+        the description alone would leave every signal a bare number for the
+        life of the entry, because the description is written once and the
+        entity is never rebuilt. So where the description says nothing, the
+        current reading does.
+
+        Static resources are unaffected: their descriptions are written after
+        the setup poll and already carry all of this.
+        """
+        description = self.entity_description
+        if (
+            description.device_class is not None
+            or description.native_unit_of_measurement is not None
+        ):
+            return description
+
+        resource = self.resource
+        if isinstance(resource, NumericResource):
+            return _apply_numeric(description, resource, self._path)
+        if isinstance(resource, StringResource) and resource.options:
+            return replace(
+                description, device_class=SensorDeviceClass.ENUM, options=list(resource.options)
+            )
+        return description
+
+    @property
+    def device_class(self) -> SensorDeviceClass | None:
+        """The device class, which a signal only learns once it has a value."""
+        return self._described.device_class
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """The unit, which a signal only learns once it has a value."""
+        return self._described.native_unit_of_measurement
+
+    @property
+    def state_class(self) -> SensorStateClass | None:
+        """The state class, which a signal only learns once it has a value."""
+        return self._described.state_class
+
+    @property
+    def options(self) -> list[str] | None:
+        """The labels of an enumeration, which the gateway reports with it.
+
+        An entity that has lost its reading keeps none: an empty list beside
+        ``device_class: enum`` would make Home Assistant reject the next
+        state that arrives.
+        """
+        return self._described.options
 
     @property
     def native_value(self) -> float | int | str | None:

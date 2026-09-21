@@ -21,6 +21,10 @@ PREFIX = "sensor.compress_cs5800iaw_12_mb"
 #: Gateway resources, and every signal that names no part of the plant.
 GATEWAY_PREFIX = "sensor.k_40_rf"
 
+#: The one signal the test gateway offers, and the entity it becomes.
+SIGNAL_PATH = "/signals/SRC.OutdoorTemp"
+SIGNAL_ENTITY = f"{PREFIX}_outdoor_temperature"
+
 
 async def test_a_temperature_becomes_a_temperature_sensor(
     hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
@@ -179,3 +183,124 @@ async def test_a_two_state_resource_becomes_a_binary_sensor(
     assert state is not None
     assert state.state == "on"
     assert state.attributes["device_class"] == "heat"
+
+
+class TestASignalTheUserEnables:
+    """The diagnostic branch, seen the way the user meets it.
+
+    Signals are off until somebody switches one on, and switching one on is
+    the only moment the branch has ever been asked for. Both of these were
+    wrong at once: the entity waited ten minutes for its first reading and
+    then showed a bare number, because its description had been written
+    before there was anything to write.
+    """
+
+    @staticmethod
+    async def _enable(hass: HomeAssistant, config_entry: MockConfigEntry) -> str:
+        """Switch the signal entity on, the way the user does."""
+        registry = er.async_get(hass)
+        entry = registry.async_get(SIGNAL_ENTITY)
+        assert entry is not None
+        assert entry.disabled_by is er.RegistryEntryDisabler.INTEGRATION
+
+        registry.async_update_entity(SIGNAL_ENTITY, disabled_by=None)
+        await hass.async_block_till_done()
+        # Enabling an entity reloads the entry; the reload is what would
+        # otherwise start the ten-minute interval over.
+        await hass.config_entries.async_reload(config_entry.entry_id)
+        await hass.async_block_till_done()
+        return SIGNAL_ENTITY
+
+    async def test_it_reads_a_value_without_waiting_for_the_interval(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+    ) -> None:
+        readings[SIGNAL_PATH] = parse_resource(
+            {
+                "id": SIGNAL_PATH,
+                "type": "floatValue",
+                "value": 13.9,
+                "unitOfMeasure": "C",
+                "state": {"NA_OPEN": -3276.8, "NA_SHORT": 3276.7},
+            }
+        )
+        await setup_entry(hass, config_entry)
+
+        state = hass.states.get(await self._enable(hass, config_entry))
+        assert state is not None
+        assert state.state == "13.9"
+
+    async def test_it_arrives_as_a_temperature_not_a_bare_number(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+    ) -> None:
+        readings[SIGNAL_PATH] = parse_resource(
+            {"id": SIGNAL_PATH, "type": "floatValue", "value": 13.9, "unitOfMeasure": "C"}
+        )
+        await setup_entry(hass, config_entry)
+
+        state = hass.states.get(await self._enable(hass, config_entry))
+        assert state is not None
+        assert state.attributes["device_class"] == SensorDeviceClass.TEMPERATURE
+        assert state.attributes["unit_of_measurement"] == UnitOfTemperature.CELSIUS
+        assert state.attributes["state_class"] == SensorStateClass.MEASUREMENT
+
+    async def test_an_enumerated_signal_brings_its_labels(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+    ) -> None:
+        """A label map with no unit is an enumeration, options and all."""
+        readings[SIGNAL_PATH] = parse_resource(
+            {
+                "id": SIGNAL_PATH,
+                "type": "integerValue",
+                "value": 1,
+                "state": {"IDLE": 2, "COOLING": 3, "HEATING": 1},
+            }
+        )
+        await setup_entry(hass, config_entry)
+
+        state = hass.states.get(await self._enable(hass, config_entry))
+        assert state is not None
+        assert state.state == "HEATING"
+        assert state.attributes["device_class"] == SensorDeviceClass.ENUM
+        assert state.attributes["options"] == ["HEATING", "IDLE", "COOLING"]
+        # An enumeration that claimed a unit or a state class would be rejected.
+        assert "unit_of_measurement" not in state.attributes
+        assert "state_class" not in state.attributes
+
+    async def test_a_signal_that_stops_answering_goes_unavailable(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+    ) -> None:
+        """Losing the reading must not leave an enum behind without labels."""
+        readings[SIGNAL_PATH] = parse_resource(
+            {
+                "id": SIGNAL_PATH,
+                "type": "integerValue",
+                "value": 1,
+                "state": {"IDLE": 2, "COOLING": 3, "HEATING": 1},
+            }
+        )
+        await setup_entry(hass, config_entry)
+        entity_id = await self._enable(hass, config_entry)
+
+        del readings[SIGNAL_PATH]
+        await config_entry.runtime_data.signal_coordinator.async_refresh()
+        await hass.async_block_till_done()
+
+        state = hass.states.get(entity_id)
+        assert state is not None
+        assert state.state == STATE_UNAVAILABLE

@@ -281,3 +281,31 @@ class TestInstallationProbe:
         assert HC2_PATH not in coordinator.paths
         # The entity is not removed behind the user's back -- it says so.
         assert hass.states.get(CIRCUIT_2_ENTITY).state == STATE_UNAVAILABLE
+
+
+async def test_the_signal_channel_polls_at_once_for_the_first_listener(
+    hass: HomeAssistant, mock_client: AsyncMock, config_entry: MockConfigEntry
+) -> None:
+    """An enabled signal must not wait out an interval it did not start.
+
+    The platforms listen without a context from setup on, so the interval is
+    already running when the first entity appears -- and enabling an entity
+    reloads the entry, which starts that interval over. Ten minutes of
+    ``unavailable`` after switching something on reads as broken, not slow.
+    """
+    await setup_entry(hass, config_entry)
+    coordinator = config_entry.runtime_data.signal_coordinator
+    assert coordinator.data is None
+
+    calls = mock_client.async_get_many.call_count
+    coordinator.async_add_listener(lambda: None, "/signals/SRC.OutdoorTemp")
+    await hass.async_block_till_done()
+
+    assert mock_client.async_get_many.call_count > calls
+    assert coordinator.data is not None
+
+    # The next listeners cost nothing: eighty-odd entities arrive at once.
+    calls = mock_client.async_get_many.call_count
+    coordinator.async_add_listener(lambda: None, "/signals/SRC.OutdoorTemp")
+    await hass.async_block_till_done()
+    assert mock_client.async_get_many.call_count == calls

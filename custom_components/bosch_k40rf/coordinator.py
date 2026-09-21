@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import timedelta
 import logging
+from typing import Any
 
 from pyk40rf import Installation, K40AuthError, K40Client, K40Error, Resource
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
@@ -186,6 +188,36 @@ class K40SignalCoordinator(K40BaseCoordinator):
     def __init__(self, hass: HomeAssistant, entry: K40ConfigEntry, client: K40Client) -> None:
         """Initialise the signal coordinator."""
         super().__init__(hass, entry, client, f"{DOMAIN} signals", SIGNAL_SCAN_INTERVAL)
+        self._first_poll_requested = False
+
+    @callback
+    def async_add_listener(
+        self, update_callback: CALLBACK_TYPE, context: Any = None
+    ) -> Callable[[], None]:
+        """Register a listener, and poll at once for the first real one.
+
+        Adding a listener only arms the interval, so without this the first
+        reading of a signal the user has just enabled would be ten minutes
+        away -- and enabling an entity reloads the entry, which starts that
+        interval over. Entities that stay disabled never ask for anything,
+        which is what ``context`` distinguishes: the platforms listen without
+        one, to hear about entities they have yet to create.
+
+        The request is debounced by the coordinator, so the eighty-odd
+        entities of a gateway arriving at once still cost one poll.
+        """
+        remove = super().async_add_listener(update_callback, context)
+        if context is not None and not self._first_poll_requested:
+            self._first_poll_requested = True
+            # Tied to the entry: an unload while this is in flight must not
+            # leave a poll running against a session that is being closed.
+            self.config_entry.async_create_background_task(
+                self.hass,
+                self.async_request_refresh(),
+                f"{DOMAIN} first signal poll",
+                eager_start=True,
+            )
+        return remove
 
     def set_signals(self, signals: tuple[str, ...]) -> None:
         """Record which signal resources this gateway offers."""

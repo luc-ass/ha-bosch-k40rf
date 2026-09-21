@@ -208,8 +208,14 @@ writes them, because a guessed expansion would read better and mean less.
 ### Polling
 
 Live readings every 60 seconds. Diagnostic signals every 10 minutes, and only
-while at least one of them is enabled. The gateway serves one resource per
-request, so a poll is dozens of small requests; at most four run at a time.
+while at least one of them is enabled — the first one enabled is read at once
+rather than at the next interval, so a signal switched on has a value within
+seconds. The gateway serves one resource per request, so a poll is dozens of
+small requests; at most four run at a time.
+
+A signal's unit and its label table come from the reading, not from a
+catalogue: `SRC.OutdoorTemp` is a temperature in °C with a history, and
+`SC.SeasonOpt.Mode` an enumeration that reads **HEATING**.
 
 History (`/recordings`) is available from the API but is not polled, and not
 imported into long-term statistics.
