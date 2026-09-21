@@ -14,7 +14,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import CONF_AUTH_PORT, DOMAIN, MAX_CONCURRENT_REQUESTS
 from .coordinator import K40DataCoordinator, K40SignalCoordinator
-from .devices import DeviceTree, brand, build_device_tree, build_hub, firmware_version
+from .devices import brand, build_device_tree, build_hub, firmware_version
 from .types import K40ConfigEntry, K40RuntimeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,14 +74,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
     # registered before the platforms describe anything that hangs off it.
     hub_entry = dr.async_get(hass).async_get_or_create(config_entry_id=entry.entry_id, **hub)
     devices = build_device_tree(gateway_id, system_info, installation, hub, hub_entry.id)
-    _remove_stale_devices(hass, entry, devices)
     entry.runtime_data = K40RuntimeData(
         coordinator=coordinator,
         signal_coordinator=signal_coordinator,
-        installation=installation,
         system_info=system_info,
         gateway_id=gateway_id,
         devices=devices,
+        hub=hub,
+        hub_device_id=hub_entry.id,
     )
 
     _LOGGER.debug(
@@ -95,21 +95,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:
     return True
 
 
-def _remove_stale_devices(hass: HomeAssistant, entry: K40ConfigEntry, devices: DeviceTree) -> None:
-    """Drop the devices of circuits the gateway no longer reports.
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: K40ConfigEntry, device: dr.DeviceEntry
+) -> bool:
+    """Allow the user to delete a device the gateway no longer reports.
 
-    Safe to do automatically: discovery either enumerates the whole
-    installation or fails the setup outright -- only a 404 or a 403 counts a
-    circuit as absent, while a connection error propagates. So a circuit
-    missing from a completed discovery is really gone, not merely unreachable.
+    Deleting is offered rather than done. The API has no device list, only
+    resources that answer or do not, and a circuit answers nothing while its
+    module sits without power -- during a service call, say. Removing it then
+    would take its entities with it, and with them every name, area and
+    enabled signal the user had set: a reading that came back an hour later
+    would come back stripped.
+
+    So a circuit that stops answering goes unavailable and stays, and the one
+    irreversible step is left to the person who knows whether the thing was
+    unplugged or taken out.
     """
-    registry = dr.async_get(hass)
-    current = {identifier for device in devices.all_devices for identifier in device["identifiers"]}
-    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
-        if device.identifiers & current:
-            continue
-        _LOGGER.debug("Removing device %s: the gateway no longer reports it", device.name)
-        registry.async_remove_device(device.id)
+    current = {
+        identifier
+        for known in entry.runtime_data.devices.all_devices
+        for identifier in known["identifiers"]
+    }
+    return not (device.identifiers & current)
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: K40ConfigEntry) -> bool:

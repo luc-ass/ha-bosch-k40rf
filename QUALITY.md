@@ -12,13 +12,12 @@ The manifest declares **bronze**.
 |---|---:|---:|---:|---|
 | Bronze | 14 | 5 | 1 | — |
 | Silver | 8 | 2 | 0 | ⛔ blocked below |
-| Gold | 17 | 1 | 3 | — |
+| Gold | 18 | 1 | 2 | — |
 | Platinum | 3 | 0 | 0 | ⛔ blocked below |
 
 ## What is missing
 
 - **Bronze · [brands](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/brands)** — Needs a PR to home-assistant/brands. The eight assets are rendered and live in custom_components/bosch_k40rf/brand, which is what HACS displays.
-- **Gold · [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices)** — Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running.
 - **Gold · [entity-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-translations)** — Catalogue resources and their counter components are translated. The dynamic /signals branch is device specific and cannot be translated ahead of time; those entities are named from their id at runtime and are disabled by default.
 - **Gold · [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations)** — Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles.
 
@@ -77,7 +76,7 @@ The manifest declares **bronze**.
 | [docs-supported-functions](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-supported-functions) | ✅ |  |
 | [docs-troubleshooting](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-troubleshooting) | ✅ |  |
 | [docs-use-cases](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/docs-use-cases) | ✅ |  |
-| [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices) | ⬜ | Circuits are probed once per setup. A circuit added to the heating system later is picked up on the next reload, not while running. |
+| [dynamic-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/dynamic-devices) | ✅ | The installation is probed again hourly, and a circuit that appears gets its device and entities without a reload. Radio zones and devices stay out of that probe: 48 further ids, none of them ever seen answering. |
 | [entity-category](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-category) | ✅ |  |
 | [entity-device-class](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-device-class) | ✅ |  |
 | [entity-disabled-by-default](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/entity-disabled-by-default) | ✅ |  |
@@ -86,7 +85,7 @@ The manifest declares **bronze**.
 | [icon-translations](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/icon-translations) | ⬜ | Entities use device classes and default icons. Giving 191 catalogue resources their own icons is worth doing once the entity set settles. |
 | [reconfiguration-flow](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/reconfiguration-flow) | ✅ | Changes the host of an entry set up by hand; the stored token proves at the new address that it is the same gateway. A discovered gateway keeps its own address current, and a rejected token starts reauth instead. |
 | [repair-issues](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/repair-issues) | ➖ | Nothing the user can repair is detectable beyond reauthentication. |
-| [stale-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/stale-devices) | ✅ | Circuits, zones and heat sources are devices under the gateway. Discovery enumerates the whole installation or fails the setup, so a circuit missing from it is gone rather than unreachable, and its device is removed at setup. |
+| [stale-devices](https://developers.home-assistant.io/docs/core/integration-quality-scale/rules/stale-devices) | ✅ | Through async_remove_config_entry_device, as the rule allows where a device's absence cannot be told from its silence: the API has no device list, and a circuit whose module has no power answers exactly like one that was taken out. A removal would take the entities with it, and with them the names, areas and enabled signals the user had set, so the delete button is offered on devices the gateway no longer reports. |
 
 ## Platinum
 

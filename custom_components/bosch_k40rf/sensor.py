@@ -14,7 +14,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -40,11 +40,34 @@ async def async_setup_entry(
     entry: K40ConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up the sensors that this gateway actually has."""
+    """Set up the sensors that this gateway actually has.
+
+    The set is not fixed for the life of the entry: the coordinator probes the
+    installation again now and then, and a circuit added to the heating system
+    brings its own resources with it. So every poll is a chance to add what is
+    new -- and only what is new, which is what the seen ids are for.
+    """
     runtime = entry.runtime_data
-    entities: list[SensorEntity] = list(_build_resource_sensors(runtime, runtime.devices))
-    entities.extend(_build_signal_sensors(runtime, runtime.devices))
-    async_add_entities(entities)
+    seen: set[str] = set()
+
+    @callback
+    def _add_new_sensors() -> None:
+        entities = [
+            entity
+            for entity in (
+                *_build_resource_sensors(runtime, runtime.devices),
+                *_build_signal_sensors(runtime, runtime.devices),
+            )
+            if entity.unique_id not in seen
+        ]
+        if not entities:
+            return
+        seen.update(str(entity.unique_id) for entity in entities)
+        async_add_entities(entities)
+
+    _add_new_sensors()
+    entry.async_on_unload(runtime.coordinator.async_add_listener(_add_new_sensors))
+    entry.async_on_unload(runtime.signal_coordinator.async_add_listener(_add_new_sensors))
 
 
 def _build_resource_sensors(runtime: K40RuntimeData, devices: DeviceTree) -> Iterable[SensorEntity]:

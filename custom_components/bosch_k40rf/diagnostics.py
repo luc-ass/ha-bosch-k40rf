@@ -36,7 +36,7 @@ async def async_get_config_entry_diagnostics(
 ) -> dict[str, Any]:
     """Return what is useful for debugging one gateway, minus its credentials."""
     runtime = entry.runtime_data
-    installation = runtime.installation
+    installation = runtime.coordinator.installation
     coordinator = runtime.coordinator
 
     answered = set(coordinator.paths)

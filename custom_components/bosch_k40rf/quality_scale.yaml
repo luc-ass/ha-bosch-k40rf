@@ -64,10 +64,11 @@ rules:
   docs-troubleshooting: done
   docs-use-cases: done
   dynamic-devices:
-    status: todo
+    status: done
     comment: >-
-      Circuits are probed once per setup. A circuit added to the heating system
-      later is picked up on the next reload, not while running.
+      The installation is probed again hourly, and a circuit that appears gets
+      its device and entities without a reload. Radio zones and devices stay
+      out of that probe: 48 further ids, none of them ever seen answering.
   entity-category: done
   entity-device-class: done
   entity-disabled-by-default: done
@@ -96,10 +97,12 @@ rules:
   stale-devices:
     status: done
     comment: >-
-      Circuits, zones and heat sources are devices under the gateway. Discovery
-      enumerates the whole installation or fails the setup, so a circuit missing
-      from it is gone rather than unreachable, and its device is removed at
-      setup.
+      Through async_remove_config_entry_device, as the rule allows where a
+      device's absence cannot be told from its silence: the API has no device
+      list, and a circuit whose module has no power answers exactly like one
+      that was taken out. A removal would take the entities with it, and with
+      them the names, areas and enabled signals the user had set, so the
+      delete button is offered on devices the gateway no longer reports.
 
   # Platinum
   async-dependency: done

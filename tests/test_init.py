@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock
 from pyk40rf import Installation, K40AuthError, K40ConnectionError, parse_resource
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
+from custom_components.bosch_k40rf import async_remove_config_entry_device
 from custom_components.bosch_k40rf.const import DOMAIN
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
@@ -162,35 +163,100 @@ async def test_only_present_resources_are_polled(
     assert len(probe_call.args[0]) > 100
 
 
-async def test_a_circuit_the_gateway_stopped_reporting_is_removed(
-    hass: HomeAssistant,
-    mock_client: AsyncMock,
-    config_entry: MockConfigEntry,
-    readings: dict[str, object],
-    installation: Installation,
-) -> None:
-    """A circuit taken out of the heating system loses its device on reload."""
-    path = "/heatingCircuits/hc1/roomtemperature"
-    readings[path] = parse_resource(
-        {"id": path, "type": "floatValue", "value": 21.5, "unitOfMeasure": "C"}
-    )
-    await setup_entry(hass, config_entry)
+class TestRemovingADevice:
+    """Deleting is offered, never done.
 
-    registry = dr.async_get(hass)
-    identifier = (DOMAIN, f"{DEVICE_ID}_heatingcircuits_hc1")
-    assert registry.async_get_device_by_identifier(identifier, config_entry.entry_id) is not None
+    A module without power answers exactly like one that was taken out, and
+    removing a device takes its entities with it -- names, areas and the
+    signals somebody switched on included. So the gateway's silence is not
+    treated as proof, and the delete button is the user's to press.
+    """
 
-    # The installation loses the circuit, and with it the reading.
-    del readings[path]
-    mock_client.async_discover_installation.return_value = replace(
-        installation, heating_circuits=()
-    )
-    await hass.config_entries.async_reload(config_entry.entry_id)
-    await hass.async_block_till_done()
+    @staticmethod
+    async def _setup_with_circuit(
+        hass: HomeAssistant, config_entry: MockConfigEntry, readings: dict[str, object]
+    ) -> None:
+        """Set up an entry whose first heating circuit answers."""
+        path = "/heatingCircuits/hc1/roomtemperature"
+        readings[path] = parse_resource(
+            {"id": path, "type": "floatValue", "value": 21.5, "unitOfMeasure": "C"}
+        )
+        await setup_entry(hass, config_entry)
 
-    assert registry.async_get_device_by_identifier(identifier, config_entry.entry_id) is None
-    # The gateway itself is never collected.
-    assert (
-        registry.async_get_device_by_identifier((DOMAIN, DEVICE_ID), config_entry.entry_id)
-        is not None
-    )
+    async def test_a_circuit_that_stops_answering_keeps_its_device(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+        installation: Installation,
+    ) -> None:
+        """Not even a reload throws it away -- it may just be off."""
+        await self._setup_with_circuit(hass, config_entry, readings)
+        registry = dr.async_get(hass)
+        identifier = (DOMAIN, f"{DEVICE_ID}_heatingcircuits_hc1")
+        assert registry.async_get_device_by_identifier(identifier, config_entry.entry_id)
+
+        del readings["/heatingCircuits/hc1/roomtemperature"]
+        mock_client.async_discover_installation.return_value = replace(
+            installation, heating_circuits=()
+        )
+        await hass.config_entries.async_reload(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert registry.async_get_device_by_identifier(identifier, config_entry.entry_id)
+
+    async def test_the_user_may_delete_a_device_the_gateway_dropped(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+        installation: Installation,
+    ) -> None:
+        await self._setup_with_circuit(hass, config_entry, readings)
+        registry = dr.async_get(hass)
+        device = registry.async_get_device_by_identifier(
+            (DOMAIN, f"{DEVICE_ID}_heatingcircuits_hc1"), config_entry.entry_id
+        )
+        assert device is not None
+
+        del readings["/heatingCircuits/hc1/roomtemperature"]
+        mock_client.async_discover_installation.return_value = replace(
+            installation, heating_circuits=()
+        )
+        await hass.config_entries.async_reload(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert await async_remove_config_entry_device(hass, config_entry, device) is True
+
+    async def test_a_device_that_is_still_there_cannot_be_deleted(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+        readings: dict[str, object],
+    ) -> None:
+        """Otherwise the next poll would recreate it, minus its settings."""
+        await self._setup_with_circuit(hass, config_entry, readings)
+        registry = dr.async_get(hass)
+        device = registry.async_get_device_by_identifier(
+            (DOMAIN, f"{DEVICE_ID}_heatingcircuits_hc1"), config_entry.entry_id
+        )
+        assert device is not None
+
+        assert await async_remove_config_entry_device(hass, config_entry, device) is False
+
+    async def test_the_gateway_itself_cannot_be_deleted(
+        self,
+        hass: HomeAssistant,
+        mock_client: AsyncMock,
+        config_entry: MockConfigEntry,
+    ) -> None:
+        await setup_entry(hass, config_entry)
+        device = dr.async_get(hass).async_get_device_by_identifier(
+            (DOMAIN, DEVICE_ID), config_entry.entry_id
+        )
+        assert device is not None
+
+        assert await async_remove_config_entry_device(hass, config_entry, device) is False
