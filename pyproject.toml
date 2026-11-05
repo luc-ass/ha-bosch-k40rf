@@ -22,6 +22,13 @@ python_version = "3.14"
 strict = true
 warn_unreachable = true
 
+# HA 2026.10 moved BinarySensorDeviceClass into binary_sensor/const.py and
+# dropped it from the package's __all__ (2026.11 lists it again). The import
+# works at runtime on every version; only strict mypy objects to it.
+[[tool.mypy.overrides]]
+module = "homeassistant.components.binary_sensor"
+implicit_reexport = true
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
