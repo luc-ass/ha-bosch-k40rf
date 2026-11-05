@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 import logging
 from typing import Any
 
@@ -31,7 +31,13 @@ from .const import CONF_AUTH_PORT, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_SCHEMA = vol.Schema({vol.Required(CONF_HOST): str})
+# From 2026.10 on, Home Assistant swaps voluptuous for its probatio shim at
+# import time, so these are probatio schemas at runtime -- but mypy reads the
+# voluptuous stubs and rejects them. Typing the constructor loosely keeps one
+# source valid from 2026.9 on, until the minimum version moves past 2026.10.
+_schema: Callable[..., Any] = vol.Schema
+
+STEP_USER_SCHEMA = _schema({vol.Required(CONF_HOST): str})
 
 
 class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -151,7 +157,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
                     self._abort_if_unique_id_configured()
                 return await self.async_step_proximity()
 
-        schema = vol.Schema(
+        schema = _schema(
             {
                 vol.Required(CONF_USERNAME, default=self._username or ""): str,
                 vol.Required(CONF_PASSWORD): str,
@@ -186,7 +192,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="proximity",
-            data_schema=vol.Schema({}),
+            data_schema=_schema({}),
             errors=errors,
             description_placeholders={"host": self._host or ""},
         )
@@ -230,7 +236,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="token",
-            data_schema=vol.Schema({vol.Required(CONF_TOKEN): str}),
+            data_schema=_schema({vol.Required(CONF_TOKEN): str}),
             errors=errors,
             description_placeholders={"host": self._host or ""},
         )
@@ -259,7 +265,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema({vol.Required(CONF_PASSWORD): str}),
+            data_schema=_schema({vol.Required(CONF_PASSWORD): str}),
             errors=errors,
             description_placeholders={"host": self._host or ""},
         )
@@ -316,7 +322,7 @@ class K40ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema({vol.Required(CONF_HOST, default=entry.data[CONF_HOST]): str}),
+            data_schema=_schema({vol.Required(CONF_HOST, default=entry.data[CONF_HOST]): str}),
             errors=errors,
             description_placeholders={"device_id": entry.unique_id or ""},
         )
