@@ -14,7 +14,7 @@ every field it exposes is marked non-writable.
 API at all.
 
 > [!WARNING]
-> **Beta — version 0.1.16.**
+> **Beta — version 0.1.17.**
 >
 > Three heating systems have ever run this, all air-to-water heat pumps: the
 > development system, which also has hot water and mechanical ventilation, a
