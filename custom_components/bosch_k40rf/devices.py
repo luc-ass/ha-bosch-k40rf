@@ -285,7 +285,7 @@ def _subdevice(
         sw_version=module.version if module else None,
         via_device_id=hub_device_id,
     )
-    return device | _naming(family, circuit_id, count, module)
+    device.update(_naming(family, circuit_id, count, module)); return device
 
 
 def _naming(
