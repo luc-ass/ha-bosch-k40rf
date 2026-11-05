@@ -285,7 +285,10 @@ def _subdevice(
         sw_version=module.version if module else None,
         via_device_id=hub_device_id,
     )
-    return device | _naming(family, circuit_id, count, module)
+    # Home Assistant 2026.11 made DeviceInfo a dataclass: it still has update(),
+    # but no longer the | of the TypedDict it used to be (issue #17).
+    device.update(_naming(family, circuit_id, count, module))
+    return device
 
 
 def _naming(
