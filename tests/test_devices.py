@@ -288,6 +288,26 @@ def test_a_branch_without_a_matching_id_falls_back_to_the_gateway(
     )
 
 
+class _DataclassLikeDeviceInfo(dict):  # type: ignore[type-arg]
+    """A DeviceInfo as Home Assistant 2026.11 ships it: update(), but no ``|``."""
+
+    def __or__(self, other: object) -> _DataclassLikeDeviceInfo:
+        raise TypeError("unsupported operand type(s) for |")
+
+
+def test_the_tree_builds_without_merging_device_infos_by_operator(
+    system_info: SystemInfo, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """HA 2026.11 turned DeviceInfo into a dataclass and setup died on ``|`` (#17)."""
+    monkeypatch.setattr(
+        "custom_components.bosch_k40rf.devices.DeviceInfo", _DataclassLikeDeviceInfo
+    )
+    devices = tree(system_info, Installation(heating_circuits=("hc1", "hc2")))
+    circuit = devices.branches[("heatingCircuits", "hc2")]
+    assert circuit["translation_placeholders"] == {"number": "2"}
+    assert circuit["via_device_id"] == HUB_DEVICE_ID
+
+
 def test_a_gateway_with_bare_modules_still_describes_itself() -> None:
     """No module tells us anything: the hub keeps its own model, nothing more."""
     empty = SystemInfo(gateway_id=DEVICE_ID, modules=(SystemInfoModule(None, None, None, None),))
